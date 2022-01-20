@@ -206,6 +206,9 @@ void __declspec(naked)vampire_HealthDrain()
 
 	__asm pushad
 
+	if (*g_gameVals.pMatchState != MatchState_Fight)
+		previous_real_timer = 0;
+
 	if (*g_gameVals.pMatchState == MatchState_Fight) //on match only
 	{
 		player1 = g_interfaces.player1.GetData();
@@ -220,11 +223,24 @@ void __declspec(naked)vampire_HealthDrain()
 		else
 		{
 			//uninitialized value or new match started:
-			if (previous_real_timer == 0 || previous_real_timer < *g_gameVals.pMatchTimer)
+			if (previous_real_timer == 0)
 				previous_real_timer = *g_gameVals.pMatchTimer;
 
-			vampirism_timer += (previous_real_timer - *g_gameVals.pMatchTimer);
-			previous_real_timer = *g_gameVals.pMatchTimer;
+			if (*g_gameVals.pMatchTimer > previous_real_timer)
+			{
+				if ((*g_gameVals.pMatchTimer - previous_real_timer) > vampirism_timer)
+					vampirism_timer = (60 - ((*g_gameVals.pMatchTimer - previous_real_timer) - vampirism_timer));
+				
+				else
+					vampirism_timer -= (*g_gameVals.pMatchTimer - previous_real_timer);
+				
+				previous_real_timer = *g_gameVals.pMatchTimer;
+			}
+			else
+			{
+				vampirism_timer += (previous_real_timer - *g_gameVals.pMatchTimer);
+				previous_real_timer = *g_gameVals.pMatchTimer;
+			}
 		}
 
 		if (vampirism_timer > 60) // 1 sec
