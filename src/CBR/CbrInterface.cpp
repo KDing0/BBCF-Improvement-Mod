@@ -305,7 +305,7 @@ void CbrInterface::SaveCbrDataExperiment(CbrData& cbr) {
 		strcpy(meta.opponentChar, opponentChar.c_str());
 		meta.rCount = rCount;
 
-		std::ofstream outfile(filename, std::ios_base::binary);
+		std::ofstream outfile(filenameMeta, std::ios_base::binary);
 		boost::iostreams::filtering_stream<boost::iostreams::output> f;
 		f.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_compression)));
 		f.push(outfile);
@@ -320,6 +320,8 @@ void CbrInterface::SaveCbrDataExperiment(CbrData& cbr) {
 		f.push(outfile);
 		boost::archive::binary_oarchive archive(f);
 		archive << cbr;
+
+
 	}
 	auto filenameReal2Meta = "\\CBRsave\\Metadata\\" + cbr.getCharName() + cbr.getPlayerName() + ".met";
 	auto filenameReal2 = "\\CBRsave\\" + cbr.getCharName() + cbr.getPlayerName() + ".cbr";
@@ -653,18 +655,11 @@ CbrData CbrInterface::LoadCbrDataNoThread(std::string filename) {
 	// Read metadata
 	try
 	{
-		std::ifstream infile2(filenameMeta, std::ios_base::binary);
-		boost::iostreams::filtering_stream<boost::iostreams::input> f;
-		f.push(boost::iostreams::gzip_decompressor());
-		f.push(infile2);
-		boost::archive::binary_iarchive archive(f);
-		archive >> meta;
-
-
 		boost::iostreams::filtering_stream<boost::iostreams::input> f2;
 		f2.push(boost::iostreams::gzip_decompressor());
 		f2.push(infile);
 		boost::archive::binary_iarchive archive2(f2);
+		CbrData insert;
 		archive2 >> insert;
 		return insert;
 	}
@@ -1227,7 +1222,7 @@ void CbrInterface::saveReplayDataInMenu() {
 			charName = anReplay.getFocusCharName();
 			playerName = anReplay.getPlayerName();
 			if (ranOnce) { 
-				SaveCbrData(cbrData); 
+				SaveCbrDataExperiment(cbrData);
 				if (autoUploadOwnData && cbrData.getPlayerName() == playerID){ CbrHTTPPostNoThreat(convertCBRtoJson(cbrData, playerID)); }
 				cbrData = CbrData();
 			}
@@ -1249,7 +1244,7 @@ void CbrInterface::saveReplayDataInMenu() {
 		
 	}
 	if(ranOnce){ 
-		SaveCbrData(cbrData);
+		SaveCbrDataExperiment(cbrData);
 		if (autoUploadOwnData && cbrData.getPlayerName() == playerID) { CbrHTTPPostNoThreat(convertCBRtoJson(cbrData, playerID)); }
 	}
 	ranOnce = false;
@@ -1261,7 +1256,7 @@ void CbrInterface::saveReplayDataInMenu() {
 			charName = anReplay.getFocusCharName();
 			playerName = anReplay.getPlayerName();
 			if (ranOnce) { 
-				SaveCbrData(cbrData); 
+				SaveCbrDataExperiment(cbrData);
 				if (autoUploadOwnData && cbrData.getPlayerName() == playerID) { CbrHTTPPostNoThreat(convertCBRtoJson(cbrData, playerID)); }
 				cbrData = CbrData();
 			}
@@ -1283,7 +1278,7 @@ void CbrInterface::saveReplayDataInMenu() {
 		
 	}
 	if (ranOnce) { 
-		SaveCbrData(cbrData); 
+		SaveCbrDataExperiment(cbrData);
 		if (autoUploadOwnData && cbrData.getPlayerName() == playerID) { CbrHTTPPostNoThreat(convertCBRtoJson(cbrData, playerID)); }
 	}
 	ranOnce = false;
