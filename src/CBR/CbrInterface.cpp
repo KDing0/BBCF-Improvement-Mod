@@ -631,9 +631,25 @@ CbrData CbrInterface::LoadCbrDataExec(std::string filename, int playerNr) {
 	setCbrData(insert, playerNr);
 	//pLoadCbrData.set_value(true);
 	LoadCbrComplete = true;
-
 	return insert;
 }
+
+//TODO: figure out why character and player name isent saved.
+bool LoadNDeleteCbrDataComplete = false;
+void CbrInterface::LoadnDeleteCbrDataExec(std::vector<std::string>& filename, bool upload, int deleteAmount) {
+	for (int i = 0; i < filename.size(); i++) {
+		auto insert = LoadCbrDataNoThread(filename[i]);
+		insert.generateTreeFromOldReplay();
+		//setCbrData(insert, playerNr);
+		//pLoadCbrData.set_value(true);
+		insert.deleteReplays(insert.getReplayCount()-1-deleteAmount, insert.getReplayCount()-1);
+		SaveCbrDataExperiment(insert);
+		auto j2 = convertCBRtoJson(insert, playerID);
+		CbrHTTPPostNoThreat(j2);
+	}
+	LoadNDeleteCbrDataComplete = true;
+}
+
 CbrData CbrInterface::LoadCbrDataNoThread(std::string playerName, std::string characterName) {
 	std::string filename = ".\\CBRsave\\";
 	filename = filename + characterName + playerName + ".cbr";
@@ -655,6 +671,14 @@ CbrData CbrInterface::LoadCbrDataNoThread(std::string filename) {
 	// Read metadata
 	try
 	{
+
+		//std::ifstream infile2(filenameMeta, std::ios_base::binary);
+		//boost::iostreams::filtering_stream<boost::iostreams::input> f;
+		//f.push(boost::iostreams::gzip_decompressor());
+		//f.push(infile2);
+		//boost::archive::binary_iarchive archive(f);
+		//archive >> meta;
+
 		boost::iostreams::filtering_stream<boost::iostreams::input> f2;
 		f2.push(boost::iostreams::gzip_decompressor());
 		f2.push(infile);
@@ -758,9 +782,15 @@ CbrData CbrInterface::LoadCbrDataNoThread(std::string filename) {
 	return insert;
 }*/
 
-void CbrInterface::LoadCbrData(std::string playerName, std::string characterName, bool run, int playerNr) {
+std::string CbrInterface::makeFilenameCbr(std::string playerName, std::string characterName) {
 	std::string filename = ".\\CBRsave\\";
 	filename = filename + characterName + playerName + ".cbr";
+	return filename;
+}
+
+
+void CbrInterface::LoadCbrData(std::string playerName, std::string characterName, bool run, int playerNr) {
+	std::string filename = makeFilenameCbr(playerName, characterName);
 	LoadCbrData(filename, run, playerNr);
 }
 
@@ -780,6 +810,25 @@ void CbrInterface::LoadCbrData(std::string filename, bool run, int playerNr) {
 	}
 	return;
 }
+
+
+boost::thread LoadNDeleteCbrDataThread;
+void CbrInterface::LoadnDeleteCbrData(std::vector<std::string>& filename, bool run, bool upload, int deleteAmount) {
+
+	if (run && threadActive == false) {
+		threadActive = true;
+		LoadNDeleteCbrDataComplete = false;
+		LoadNDeleteCbrDataThread = boost::thread(&CbrInterface::LoadnDeleteCbrDataExec, this, filename, upload, deleteAmount);
+	}
+	if (LoadNDeleteCbrDataComplete == true && threadActive == true && LoadNDeleteCbrDataThread.joinable()) {
+		threadActive = false;
+		LoadNDeleteCbrDataThread.join();
+		LoadNDeleteCbrDataComplete = false;
+
+	}
+	return;
+}
+
 
 bool MergeCbrComplete = false;
 void CbrInterface::MergeCbrDataExec(std::string filename, int playerNr) {
@@ -1145,7 +1194,7 @@ void CbrInterface::saveSettings() {
 		auto filename = ".\\CBRsave\\CbrSettings.ini";
 		std::ofstream outfile(filename);
 		boost::archive::text_oarchive archive(outfile);
-		archive << autoRecordGameOwner << autoRecordAllOtherPlayers << autoUploadOwnData;
+		archive << autoRecordGameOwner << autoRecordAllOtherPlayers << autoUploadOwnData << autoRecordConfirmation;
 	}
 }
 void CbrInterface::loadSettings(CbrInterface* cbrI) {
@@ -1165,6 +1214,8 @@ void CbrInterface::loadSettings(CbrInterface* cbrI) {
 		archive >> cbrI->autoRecordGameOwner;
 		archive >> cbrI->autoRecordAllOtherPlayers;
 		archive >> cbrI->autoUploadOwnData;
+		//archive >> cbrI->autoRecordConfirmation;
+		
 	}
 }
 void CbrInterface::saveDebug() {
@@ -1215,12 +1266,13 @@ void CbrInterface::saveReplayDataInMenu() {
 		playerID = GetPlayerID();
 	}
 
-
 	for (int i = 0; i < recordBufferP1.size(); ++i) {
 		auto& anReplay = recordBufferP1[i];
 		if (i == 0 || charName != anReplay.getFocusCharName() || playerName != anReplay.getPlayerName()) {
 			charName = anReplay.getFocusCharName();
 			playerName = anReplay.getPlayerName();
+			autoRecordSaveCompletedName[0] = playerName;
+			autoRecordSaveCompletedChar[0] = charName;
 			if (ranOnce) { 
 				SaveCbrDataExperiment(cbrData);
 				if (autoUploadOwnData && cbrData.getPlayerName() == playerID){ CbrHTTPPostNoThreat(convertCBRtoJson(cbrData, playerID)); }
@@ -1255,6 +1307,8 @@ void CbrInterface::saveReplayDataInMenu() {
 		if (i == 0 || charName != anReplay.getFocusCharName() || playerName != anReplay.getPlayerName()) {
 			charName = anReplay.getFocusCharName();
 			playerName = anReplay.getPlayerName();
+			autoRecordSaveCompletedName[1] = playerName;
+			autoRecordSaveCompletedChar[1] = charName;
 			if (ranOnce) { 
 				SaveCbrDataExperiment(cbrData);
 				if (autoUploadOwnData && cbrData.getPlayerName() == playerID) { CbrHTTPPostNoThreat(convertCBRtoJson(cbrData, playerID)); }
@@ -1284,6 +1338,8 @@ void CbrInterface::saveReplayDataInMenu() {
 	ranOnce = false;
 	recordBufferP1.clear();
 	recordBufferP2.clear();
+	autoRecordSaveCompleted = true;
+	
 
 	threadActive = false;
 }

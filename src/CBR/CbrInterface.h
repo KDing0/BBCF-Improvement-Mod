@@ -49,13 +49,15 @@ public:
 
 	bool threadCheckSaving();
 
-
+	std::string CbrInterface::makeFilenameCbr(std::string playerName, std::string characterName);
 	void CbrInterface::clearThreads();
 	void CbrInterface::SaveCbrData(CbrData& cbr);
 	void CbrInterface::SaveCbrDataExperiment(CbrData& cbr);
 	void CbrInterface::SaveCbrDataThreaded(CbrData& cbr, bool run);
 	void CbrInterface::LoadCbrData(std::string playerName, std::string characterName, bool run, int playerNr);
 	void CbrInterface::LoadCbrData(std::string filename, bool run, int playerNr);
+	void CbrInterface::LoadnDeleteCbrDataExec(std::vector<std::string>& filename, bool upload,  int deleteAmount);
+	void CbrInterface::LoadnDeleteCbrData(std::vector<std::string>& filename, bool run, bool upload, int deleteAmount);
 	CbrData CbrInterface::LoadCbrDataExec(std::string filename, int playerNr);
 	CbrData CbrInterface::LoadCbrDataNoThread(std::string filename);
 	CbrData CbrInterface::LoadCbrDataNoThread(std::string playerName, std::string characterName);
@@ -86,9 +88,13 @@ public:
 	bool cbrSettingsLoaded = false;
 	bool autoRecordGameOwner = false;
 	bool autoRecordAllOtherPlayers = false;
+	int  autoRecordConfirmation = 0;
 	bool autoRecordActive = false;
 	bool autoRecordFinished = false;
 	bool autoUploadOwnData = false;
+	bool autoRecordSaveCompleted = false;
+	std::array <std::string, 2> autoRecordSaveCompletedName = { "","" };
+	std::array <std::string, 2> autoRecordSaveCompletedChar = { "","" };
 
 	int resetDepth = -1;
 	int resetPlayer = -1;

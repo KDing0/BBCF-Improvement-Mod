@@ -470,13 +470,20 @@ void MainWindow::DrawCBRAiSection() const
 	{
 		ImGui::HorizontalSpacing();
 		ImGui::TextDisabled("CBR Menu only accesible in training, versus and online versus");
-		if (ImGui::Checkbox("Automatically Record Myself", &g_interfaces.cbrInterface.autoRecordGameOwner)) {
+		if (ImGui::Checkbox("Automatically Record Myself:", &g_interfaces.cbrInterface.autoRecordGameOwner)) {
 			g_interfaces.cbrInterface.saveSettings();
 		}
 		if (ImGui::Checkbox("Automatically Record Opponents", &g_interfaces.cbrInterface.autoRecordAllOtherPlayers)) {
 			g_interfaces.cbrInterface.saveSettings();
 		}
 		if (ImGui::Checkbox("Automatically Upload Own Data", &g_interfaces.cbrInterface.autoUploadOwnData)) {
+			g_interfaces.cbrInterface.saveSettings();
+		}
+		ImGui::Text("Recording Confirmation Style:");
+		if (ImGui::RadioButton("Auto Saving", &g_interfaces.cbrInterface.autoRecordConfirmation, 0)) {
+			g_interfaces.cbrInterface.saveSettings();
+		}ImGui::SameLine();
+		if (ImGui::RadioButton("Confirm Saving", &g_interfaces.cbrInterface.autoRecordConfirmation, 1)) {
 			g_interfaces.cbrInterface.saveSettings();
 		}
 
