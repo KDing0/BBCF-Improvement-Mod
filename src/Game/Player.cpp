@@ -11,7 +11,9 @@ void Player::SetCharDataPtr(const void* addr)
 {
 	m_charData = (CharData**)addr;
 }
-
+void Player::SetScrStates(std::vector<scrState*> states) {
+	states = states;
+}
 bool Player::IsCharDataNullPtr() const
 {
 	if (m_charData == 0)

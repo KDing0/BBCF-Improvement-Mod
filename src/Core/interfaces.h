@@ -61,7 +61,7 @@ struct gameVals_t
 	byte* playerAvatarAcc2;
 
 	int isP1CPU;
-
+	//DWORD P1InputJumpBackAdress;
 	unsigned char* stageListMemory;
 	int *stageSelect_X;
 	int *stageSelect_Y;
@@ -90,6 +90,7 @@ struct gameVals_t
 	int entityCount;
 
 	Room* pRoom;
+	bool enableForeignPalettes = true;
 };
 
 struct gameProc_t

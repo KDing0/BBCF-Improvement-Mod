@@ -10,6 +10,9 @@
 #include "Overlay/Window/PaletteEditorWindow.h"
 #include "Overlay/Window/RoomWindow.h"
 #include "Overlay/Window/UpdateNotifierWindow.h"
+#include "Overlay/Window/ScrWindow.h"
+#include "Overlay/Window/InputBufferWindow.h"
+#include "Overlay/Window/PlaybackEditorWindow.h"
 
 #include "Core/info.h"
 #include "Core/logger.h"
@@ -42,4 +45,16 @@ WindowContainer::WindowContainer()
 	
 	AddWindow(WindowType_CbrServer,
 		new CbrServerWindow("CBR", true));
+
+	AddWindow(WindowType_Scr,
+		new ScrWindow("States", true, *this));
+
+	AddWindow(WindowType_InputBufferP1,
+		new InputBufferWindow("Input Buffer P1", true, 1));
+
+	AddWindow(WindowType_InputBufferP2,
+		new InputBufferWindow("Input Buffer P2", true, 2));
+
+	AddWindow(WindowType_PlaybackEditor,
+		new PlaybackEditorWindow("Playback Editor", true));
 }

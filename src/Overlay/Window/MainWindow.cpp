@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 
+
 //#include "CBR/CharacterStorage.h"
+#include "FrameAdvantage/FrameAdvantage.h"
 #include "HitboxOverlay.h"
 #include "PaletteEditorWindow.h"
 
@@ -46,8 +48,8 @@ void MainWindow::BeforeDraw()
 			windowSizeConstraints = ImVec2(250, 190);
 			break;
 		case 3:
-			windowSizeConstraints = ImVec2(400, 230);
-			break;
+windowSizeConstraints = ImVec2(400, 230);
+break;
 		default:
 			windowSizeConstraints = ImVec2(330, 230);
 	}
@@ -85,6 +87,7 @@ void MainWindow::Draw()
 	DrawGameplaySettingSection();
 	DrawCustomPalettesSection();
 	DrawHitboxOverlaySection();
+	DrawFrameAdvantageSection();
 	DrawAvatarSection();
 	DrawLoadedSettingsValuesSection();
 	DrawCBRAiSection();
@@ -115,6 +118,10 @@ void MainWindow::DrawUtilButtons() const
 	{
 		m_pWindowContainer->GetWindow(WindowType_Log)->ToggleOpen();
 	}
+	if (ImGui::Button("States", BTN_SIZE))
+	{
+		m_pWindowContainer->GetWindow(WindowType_Scr)->ToggleOpen();
+	}
 }
 
 void MainWindow::DrawCurrentPlayersCount() const
@@ -128,8 +135,6 @@ void MainWindow::DrawCurrentPlayersCount() const
 
 void MainWindow::DrawAvatarSection() const
 {
-	
-
 	if (!ImGui::CollapsingHeader("Avatar settings"))
 		return;
 
@@ -144,6 +149,95 @@ void MainWindow::DrawAvatarSection() const
 		ImGui::HorizontalSpacing(); ImGui::SliderInt("Color", g_gameVals.playerAvatarColAddr, 0, 0x3);
 		ImGui::HorizontalSpacing(); ImGui::SliderByte("Accessory 1", g_gameVals.playerAvatarAcc1, 0, 0xCF);
 		ImGui::HorizontalSpacing(); ImGui::SliderByte("Accessory 2", g_gameVals.playerAvatarAcc2, 0, 0xCF);
+	}
+}
+
+void MainWindow::DrawFrameAdvantageSection() const
+{
+	if (!ImGui::CollapsingHeader("Framedata"))
+		return;
+
+	if (!isInMatch())
+	{
+		ImGui::HorizontalSpacing();
+		ImGui::TextDisabled("YOU ARE NOT IN MATCH!");
+		return;
+	}
+	else if (!(*g_gameVals.pGameMode == GameMode_Training || *g_gameVals.pGameMode == GameMode_ReplayTheater))
+	{
+		ImGui::HorizontalSpacing();
+		ImGui::TextDisabled("YOU ARE NOT IN TRAINING MODE OR REPLAY THEATER!");
+		return;
+	}
+
+	if (!g_gameVals.pEntityList)
+		return;
+
+	computeFramedataInteractions();
+
+	static bool isFrameAdvantageOpen = false;
+	ImGui::HorizontalSpacing();
+	ImGui::Checkbox("Enable##framedata_section", &isFrameAdvantageOpen);
+
+	ImGui::HorizontalSpacing();
+	ImGui::Checkbox("Advantage on stagger hit", &idleActionToggles.ukemiStaggerHit);
+
+	if (isFrameAdvantageOpen)
+	{
+		ImVec4 color;
+		ImVec4 white(1.0f, 1.0f, 1.0f, 1.0f);
+		ImVec4 red(1.0f, 0.0f, 0.0f, 1.0f);
+		ImVec4 green(0.0f, 1.0f, 0.0f, 1.0f);
+
+		/* Window */
+		ImGui::Begin("Framedata", &isFrameAdvantageOpen);
+		ImGui::SetWindowSize(ImVec2(220, 100), ImGuiCond_FirstUseEver);
+		ImGui::SetWindowPos(ImVec2(350, 250), ImGuiCond_FirstUseEver);
+
+		ImGui::Columns(2, "columns_layout", true);
+
+		// First column
+		if (playersInteraction.frameAdvantageToDisplay > 0)
+			color = green;
+		else if (playersInteraction.frameAdvantageToDisplay < 0)
+			color = red;
+		else
+			color = white;
+
+		ImGui::Text("Player 1");
+		ImGui::TextUnformatted("Gap:");
+		ImGui::SameLine();
+		ImGui::TextUnformatted(((playersInteraction.p1GapDisplay != -1) ? std::to_string(playersInteraction.p1GapDisplay) : "").c_str());
+
+		ImGui::TextUnformatted("Advantage:");
+		ImGui::SameLine();
+		std::string str = std::to_string(playersInteraction.frameAdvantageToDisplay);
+		if (playersInteraction.frameAdvantageToDisplay > 0)
+			str = "+" + str;
+
+		ImGui::TextColored(color, "%s", str.c_str());
+
+		// Next column
+		if (playersInteraction.frameAdvantageToDisplay > 0)
+			color = red;
+		else if (playersInteraction.frameAdvantageToDisplay < 0)
+			color = green;
+		else
+			color = white;
+
+		ImGui::NextColumn();
+		ImGui::Text("Player 2");
+		ImGui::TextUnformatted("Gap:");
+		ImGui::SameLine();
+		ImGui::TextUnformatted(((playersInteraction.p2GapDisplay != -1) ? std::to_string(playersInteraction.p2GapDisplay) : "").c_str());
+
+		ImGui::TextUnformatted("Advantage:");
+		ImGui::SameLine();
+		std::string str2 = std::to_string(-playersInteraction.frameAdvantageToDisplay);
+		if (playersInteraction.frameAdvantageToDisplay < 0)
+			str2 = "+" + str2;
+		ImGui::TextColored(color, "%s", str2.c_str());
+		ImGui::End();
 	}
 }
 
@@ -191,7 +285,7 @@ void MainWindow::DrawHitboxOverlaySection() const
 	static bool isOpen = false;
 
 	ImGui::HorizontalSpacing();
-	if (ImGui::Checkbox("Enable", &isOpen))
+	if (ImGui::Checkbox("Enable##hitbox_overlay_section", &isOpen))
 	{
 		if (isOpen)
 		{
