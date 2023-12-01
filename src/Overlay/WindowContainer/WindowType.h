@@ -9,7 +9,7 @@ enum WindowType_
 	WindowType_PaletteEditor,
 	WindowType_HitboxOverlay,
 	WindowType_Room,
-	WindowType_CbrServer
+	WindowType_CbrServer,
 	WindowType_Scr,
 	WindowType_InputBufferP1,
 	WindowType_InputBufferP2,

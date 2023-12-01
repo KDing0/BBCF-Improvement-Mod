@@ -317,14 +317,14 @@ void ScrWindow::DrawStatesSection()
         static bool isActive_old;
         static bool isActive = false;
         if (ImGui::Checkbox("Naoto EN specials toggle", &isActive)) {
-            memset(&g_interfaces.player2.GetData()->slot2_or_slot4, 0x00000018, 4);
+            memset(&g_interfaces.player2.GetData()->Drive12, 0x00000018, 4);
         }
         if (isActive) {
-            memset(&g_interfaces.player2.GetData()->slot2_or_slot4, 0x00000018, 4);
+            memset(&g_interfaces.player2.GetData()->Drive12, 0x00000018, 4);
         }
         else {
             if (isActive != isActive_old) {
-                memset(&g_interfaces.player2.GetData()->slot2_or_slot4, 0, 4);
+                memset(&g_interfaces.player2.GetData()->Drive12, 0, 4);
             }
         }
         isActive_old = isActive;
@@ -496,7 +496,7 @@ void ScrWindow::DrawStatesSection()
         if (burst_onhit_toggle) {
             onhit_register = {};
             std::string lastAction = g_interfaces.player2.GetData()->lastAction;
-            std::string weird_current_action_q = g_interfaces.player2.GetData()->current_action2;
+            std::string weird_current_action_q = g_interfaces.player2.GetData()->currentActionNoNeutral;
             std::string set_action_override_hitstop_q = g_interfaces.player2.GetData()->set_action_override;
             std::string currentAction = g_interfaces.player2.GetData()->currentAction;
             std::string hitByWhichAction = g_interfaces.player2.GetData()->hitByWhichAction;

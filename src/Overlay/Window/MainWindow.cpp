@@ -91,7 +91,7 @@ void MainWindow::Draw()
 	DrawAvatarSection();
 	DrawLoadedSettingsValuesSection();
 	DrawCBRAiSection();
-	DrawReversalSection();
+	//DrawReversalSection();
 	//DrawNetaSection();
 		
 	
