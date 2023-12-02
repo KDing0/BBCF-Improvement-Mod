@@ -639,6 +639,10 @@ bool LoadNDeleteCbrDataComplete = false;
 void CbrInterface::LoadnDeleteCbrDataExec(std::vector<std::string>& filename, bool upload, int deleteAmount) {
 	for (int i = 0; i < filename.size(); i++) {
 		auto insert = LoadCbrDataNoThread(filename[i]);
+		if (insert.getPlayerName() == "-1") {
+			LoadNDeleteCbrDataComplete = true;
+			return;
+		}
 		insert.generateTreeFromOldReplay();
 		//setCbrData(insert, playerNr);
 		//pLoadCbrData.set_value(true);
