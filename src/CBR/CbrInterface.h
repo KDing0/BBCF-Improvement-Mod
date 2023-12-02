@@ -86,15 +86,16 @@ public:
 	int deletionEnd = 0;
 
 	bool cbrSettingsLoaded = false;
-	bool autoRecordGameOwner = false;
-	bool autoRecordAllOtherPlayers = false;
+	bool autoRecordGameOwner = true;
+	bool autoRecordAllOtherPlayers = true;
 	int  autoRecordConfirmation = 0;
 	bool autoRecordActive = false;
 	bool autoRecordFinished = false;
-	bool autoUploadOwnData = false;
+	bool autoUploadOwnData = true;
 	bool autoRecordSaveCompleted = false;
 	std::array <std::string, 2> autoRecordSaveCompletedName = { "","" };
 	std::array <std::string, 2> autoRecordSaveCompletedChar = { "","" };
+	std::array <int, 2>  autoRecordDeletionAmount = { 0,0 };
 
 	int resetDepth = -1;
 	int resetPlayer = -1;

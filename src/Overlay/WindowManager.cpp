@@ -138,8 +138,8 @@ bool WindowManager::Initialize(void *hwnd, IDirect3DDevice9 *device)
 
 	keyToggleHud = 114;
 
-	keyCBRsave = 115;//Settings::getButtonValue(Settings::settingsIni.saveCBRbutton);
-	keyCBRdiscard = 116;//Settings::getButtonValue(Settings::settingsIni.discardCBRbutton);
+	keyCBRsave = Settings::getButtonValue(Settings::settingsIni.saveCBRbutton);
+	keyCBRdiscard = Settings::getButtonValue(Settings::settingsIni.discardCBRbutton);
 
 	// Load custom palettes
 
@@ -228,11 +228,11 @@ void WindowManager::Render()
 
 	if (g_interfaces.cbrInterface.autoRecordFinished == true) {
 		if (g_interfaces.cbrInterface.autoRecordConfirmation == 1) {
-			//g_notificationBar->AddNotification("Currently %s replays unsaved. Press %s to save them or Press %s to discard them.", std::to_string(g_interfaces.cbrInterface.getAutoRecordReplayAmount()).c_str(), Settings::settingsIni.saveCBRbutton.c_str(), Settings::settingsIni.discardCBRbutton.c_str());
+			g_notificationBar->AddNotification("Currently %s replays unsaved. Press %s to save them or Press %s to discard them.", std::to_string(g_interfaces.cbrInterface.getAutoRecordReplayAmount()).c_str(), Settings::settingsIni.saveCBRbutton.c_str(), Settings::settingsIni.discardCBRbutton.c_str());
 		}
 		else {
 			g_interfaces.cbrInterface.autoRecordSaveCompleted = false;
-			//g_notificationBar->AddNotification("Saving Replay... Press %s to delete the last replay after saving is complete.",  Settings::settingsIni.discardCBRbutton.c_str());
+			g_notificationBar->AddNotification("Saving Replay... Press %s to delete the last replay after saving is complete.",  Settings::settingsIni.discardCBRbutton.c_str());
 			g_interfaces.cbrInterface.threadSaveReplay(true);
 		}
 		
@@ -270,9 +270,14 @@ void WindowManager::Render()
 			g_notificationBar->AddNotification("Replays being deleted");
 			static std::vector<std::string> filenames;
 			filenames.clear();
-			filenames.push_back(g_interfaces.cbrInterface.makeFilenameCbr(g_interfaces.cbrInterface.autoRecordSaveCompletedChar[0], g_interfaces.cbrInterface.autoRecordSaveCompletedName[0]));
-			filenames.push_back(g_interfaces.cbrInterface.makeFilenameCbr(g_interfaces.cbrInterface.autoRecordSaveCompletedChar[1], g_interfaces.cbrInterface.autoRecordSaveCompletedName[1]));
-			g_interfaces.cbrInterface.LoadnDeleteCbrData(filenames, true, g_interfaces.cbrInterface.autoUploadOwnData, 1);
+			if (g_interfaces.cbrInterface.autoRecordDeletionAmount[0] > 0) {
+				filenames.push_back(g_interfaces.cbrInterface.makeFilenameCbr(g_interfaces.cbrInterface.autoRecordSaveCompletedChar[0], g_interfaces.cbrInterface.autoRecordSaveCompletedName[0]));
+			}
+			if (g_interfaces.cbrInterface.autoRecordDeletionAmount[1] > 0) {
+				filenames.push_back(g_interfaces.cbrInterface.makeFilenameCbr(g_interfaces.cbrInterface.autoRecordSaveCompletedChar[1], g_interfaces.cbrInterface.autoRecordSaveCompletedName[1]));
+			}
+			
+			g_interfaces.cbrInterface.LoadnDeleteCbrData(filenames, true, g_interfaces.cbrInterface.autoUploadOwnData, g_interfaces.cbrInterface.autoRecordDeletionAmount[0]);
 		}
 		else {
 			g_notificationBar->AddNotification("No Replays to delete or currently saving replays.");
