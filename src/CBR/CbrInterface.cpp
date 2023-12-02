@@ -644,8 +644,11 @@ void CbrInterface::LoadnDeleteCbrDataExec(std::vector<std::string>& filename, bo
 		//pLoadCbrData.set_value(true);
 		insert.deleteReplays(insert.getReplayCount()-1-deleteAmount, insert.getReplayCount()-1);
 		SaveCbrDataExperiment(insert);
-		auto j2 = convertCBRtoJson(insert, playerID);
-		CbrHTTPPostNoThreat(j2);
+		if (upload) {
+			auto j2 = convertCBRtoJson(insert, playerID);
+			CbrHTTPPostNoThreat(j2);
+		}
+		
 	}
 	LoadNDeleteCbrDataComplete = true;
 }
@@ -783,8 +786,8 @@ CbrData CbrInterface::LoadCbrDataNoThread(std::string filename) {
 }*/
 
 std::string CbrInterface::makeFilenameCbr(std::string playerName, std::string characterName) {
-	std::string filename = ".\\CBRsave\\";
-	filename = filename + characterName + playerName + ".cbr";
+	std::string filename = "CBRsave\\";
+	filename = filename + playerName + characterName + ".cbr";
 	return filename;
 }
 
@@ -898,12 +901,14 @@ CbrData CbrInterface::LoadCbrDataOld(std::string filename) {
 	}
 	return insert;
 }
-
+std::vector<std::string> empty = { "" };
 void CbrInterface::clearThreads() {
 	g_interfaces.cbrInterface.SaveCbrDataThreaded(*g_interfaces.cbrInterface.getCbrData(0), false);
 	g_interfaces.cbrInterface.LoadAndUploadDataThreaded("", false);
 	g_interfaces.cbrInterface.MergeCbrDataThreaded("", false, -1);
 	g_interfaces.cbrInterface.LoadCbrData("", false, -1);
+	g_interfaces.cbrInterface.LoadnDeleteCbrData(empty, false, false, false);
+
 }
 
 int CbrInterface::getAutoRecordReplayAmount() {
@@ -1214,7 +1219,7 @@ void CbrInterface::loadSettings(CbrInterface* cbrI) {
 		archive >> cbrI->autoRecordGameOwner;
 		archive >> cbrI->autoRecordAllOtherPlayers;
 		archive >> cbrI->autoUploadOwnData;
-		//archive >> cbrI->autoRecordConfirmation;
+		archive >> cbrI->autoRecordConfirmation;
 		
 	}
 }
@@ -1265,7 +1270,8 @@ void CbrInterface::saveReplayDataInMenu() {
 	if (playerID == "") {
 		playerID = GetPlayerID();
 	}
-
+	autoRecordDeletionAmount[0] = 0;
+	autoRecordDeletionAmount[1] = 0;
 	for (int i = 0; i < recordBufferP1.size(); ++i) {
 		auto& anReplay = recordBufferP1[i];
 		if (i == 0 || charName != anReplay.getFocusCharName() || playerName != anReplay.getPlayerName()) {
@@ -1286,9 +1292,13 @@ void CbrInterface::saveReplayDataInMenu() {
 		}
 		auto cbrReplay = CbrReplayFile(anReplay.getCharacterName(), anReplay.getCharIds());
 		auto err = cbrReplay.makeFullCaseBase(&anReplay, anReplay.getFocusCharName());
+
 		if (err.structure != "") { saveStructureDebug(err.structure); }
 		debugErrorCounter[0] += err.errorCount;
-		if (err.errorCount == 0) { cbrData.AddReplay(cbrReplay); }
+		if (err.errorCount == 0) { 
+			cbrData.AddReplay(cbrReplay); 
+			autoRecordDeletionAmount[0]++;
+		}
 		else {
 			cbrCreationDebugStr += err.errorDetail;
 			saveDebug();
@@ -1324,7 +1334,10 @@ void CbrInterface::saveReplayDataInMenu() {
 		auto err = cbrReplay.makeFullCaseBase(&anReplay, anReplay.getFocusCharName());
 		if (err.structure != "") { saveStructureDebug(err.structure); }
 		debugErrorCounter[1] += err.errorCount;
-		if (err.errorCount == 0) { cbrData.AddReplay(cbrReplay); }
+		if (err.errorCount == 0) { 
+			cbrData.AddReplay(cbrReplay); 
+			autoRecordDeletionAmount[1]++;
+		}
 		else {
 			cbrCreationDebugStr += err.errorDetail;
 			saveDebug();
