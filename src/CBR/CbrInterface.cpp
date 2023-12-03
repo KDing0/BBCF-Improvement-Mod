@@ -1209,23 +1209,33 @@ void CbrInterface::saveSettings() {
 void CbrInterface::loadSettings(CbrInterface* cbrI) {
 	if (cbrSettingsLoaded == true) { return; }
 	cbrSettingsLoaded = true;
-	
-	cbrI->autoRecordGameOwner = false;
-	cbrI->autoRecordAllOtherPlayers = false;
-	std::string filename = ".\\CBRsave\\CbrSettings.ini";
-	std::ifstream infile(filename);
-	if (infile.fail()) {
-		//File does not exist code here
+	try
+	{
+		cbrI->autoRecordGameOwner = false;
+		cbrI->autoRecordAllOtherPlayers = false;
+		std::string filename = ".\\CBRsave\\CbrSettings.ini";
+		std::ifstream infile(filename);
+		if (infile.fail()) {
+			//File does not exist code here
+		}
+		else {
+			boost::archive::text_iarchive archive(infile);
+			debugPrintText += "LoadOk0\n";
+			archive >> cbrI->autoRecordGameOwner;
+			archive >> cbrI->autoRecordAllOtherPlayers;
+			archive >> cbrI->autoUploadOwnData;
+			archive >> cbrI->autoRecordConfirmation;
+
+		}
 	}
-	else {
-		boost::archive::text_iarchive archive(infile);
-		debugPrintText += "LoadOk0\n";
-		archive >> cbrI->autoRecordGameOwner;
-		archive >> cbrI->autoRecordAllOtherPlayers;
-		archive >> cbrI->autoUploadOwnData;
-		archive >> cbrI->autoRecordConfirmation;
-		
+	catch (const std::exception&)
+	{
+		cbrI->autoRecordGameOwner = true;
+		cbrI->autoRecordAllOtherPlayers = true;
+		cbrI->autoUploadOwnData = true;
+		cbrI->autoRecordConfirmation = 0;
 	}
+
 }
 void CbrInterface::saveDebug() {
 	boost::filesystem::path dir("CBRsave");
