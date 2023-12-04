@@ -89,7 +89,7 @@ void MainWindow::Draw()
 	DrawLoadedSettingsValuesSection();
 	DrawCBRAiSection();
 	DrawReversalSection();
-	//DrawNetaSection();
+	DrawNetaSection();
 		
 	
 	DrawUtilButtons();

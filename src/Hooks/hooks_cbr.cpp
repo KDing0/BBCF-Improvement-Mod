@@ -621,6 +621,11 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	meta->velocity[0][1] = focusCharData->position_y_dupe - oldPosY[0];
 	meta->velocity[1][0] = enemyCharData->position_x - oldPosX[1];
 	meta->velocity[1][1] = enemyCharData->position_y_dupe - oldPosY[1];
+	oldPosX[0] = focusCharData->position_x;
+	oldPosY[0] = focusCharData->position_y_dupe;
+	oldPosX[1] = enemyCharData->position_x;
+	oldPosY[1] = enemyCharData->position_y_dupe;
+
 
 	int buffVal = 0;
 	int testVal = 0;
