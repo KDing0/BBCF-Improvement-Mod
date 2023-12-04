@@ -217,14 +217,7 @@ int CbrData::CBRcomputeNextAction(Metadata* curGamestate) {
                 else {
                     debugPrint(curGamestate, activeCase + 1, bestCase, activeReplay, bestReplay, dci, bestReplay, bestCase, *nextReplayFile, *bestReplayFile, nextInstantLearnSameReplay, bestInstantLearnSameReplay);
                 }
-                if (!checkBestCaseBetterThanNext(bufComparison, bestComparison, nextReplayFile->getCase(activeCase + 1))) {
-                    debugPrint(curGamestate, activeCase + 1, bestCase, activeReplay, bestReplay, dci, activeReplay, activeCase + 1, *nextReplayFile, *bestReplayFile, nextInstantLearnSameReplay, bestInstantLearnSameReplay);
-                }
-                else {
-                    debugPrint(curGamestate, activeCase + 1, bestCase, activeReplay, bestReplay, dci, bestReplay, bestCase, *nextReplayFile, *bestReplayFile, nextInstantLearnSameReplay, bestInstantLearnSameReplay);
-                }
             }
-
 
             if (!checkBestCaseBetterThanNext(bufComparison, bestComparison, nextReplayFile->getCase(activeCase + 1))) {
                 bestReplay = activeReplay;
@@ -260,10 +253,7 @@ int CbrData::CBRcomputeNextAction(Metadata* curGamestate) {
             if (activeReplay != -1 && activeCase != -1) {
                 replay->getCase(activeCase)->caseCooldownFrameStart = framesActive;
             }
-        }
-        
-        
-        
+        } 
     }
 
     
@@ -290,7 +280,7 @@ void CbrData::resetCbr() {
 
 bool CbrData::switchCaseCheck(Metadata* curGamestate, CbrReplayFile& replay) {
     //No current case
-    auto b0 = activeReplay == -1;
+    auto b0 = activeReplay == -1 && activeCase == -1;
     //CurrentCase ending
     auto b1 = !b0 && activeFrame > replay.getCase(activeCase)->getEndIndex();
     //Self hit
@@ -300,7 +290,7 @@ bool CbrData::switchCaseCheck(Metadata* curGamestate, CbrReplayFile& replay) {
     //Hitting the opponent while not buffering an input
     auto b4 = !b0 && (curGamestate->getHitThisFrame()[1] || curGamestate->getBlockThisFrame()[1]) && !replay.getCase(activeCase)->getMetadata()->getInputBufferActive();
 
-    caseSwitchReason = "";
+    caseSwitchReason = "Switch Reason: ";
     if (b0) { caseSwitchReason += "No current case - "; }
     if (b1) { caseSwitchReason += "Case Ending - "; }
     if (b2) { caseSwitchReason += "Self hit - "; }

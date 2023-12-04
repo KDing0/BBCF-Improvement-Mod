@@ -2004,13 +2004,13 @@ inline float comparisonFunction(Metadata* curGamestate, Metadata* caseGamestate,
         compValue += PURE_INVOKE(compInt, curCosts[costVelocity], curGamestate->velocity[0][0], caseGamestate->velocity[0][0], maxXVelocity);
         compValue += PURE_INVOKE(compInt, curCosts[costVelocity], curGamestate->velocity[0][1], caseGamestate->velocity[0][1], maxYVelocity);
         compValue += PURE_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][0], caseGamestate->velocity[1][0], maxXVelocity);
-        compValue += PURE_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][0], caseGamestate->velocity[1][0], maxYVelocity);
+        compValue += PURE_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][1], caseGamestate->velocity[1][1], maxYVelocity);
     }
     else {
         compValue += PURE_INVOKE(compInt, curCosts[costVelocity], -curGamestate->velocity[0][0], caseGamestate->velocity[0][0], maxXVelocity);
         compValue += PURE_INVOKE(compInt, curCosts[costVelocity], curGamestate->velocity[0][1], caseGamestate->velocity[0][1], maxYVelocity);
         compValue += PURE_INVOKE(compInt, curCosts[costVelocityEnemy], -curGamestate->velocity[1][0], caseGamestate->velocity[1][0], maxXVelocity);
-        compValue += PURE_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][0], caseGamestate->velocity[1][0], maxYVelocity);
+        compValue += PURE_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][1], caseGamestate->velocity[1][1], maxYVelocity);
     }
 
 
@@ -2515,13 +2515,13 @@ inline float comparisonFunctionDebug(Metadata * curGamestate, Metadata * caseGam
         compValue += REFLECT_INVOKE(compInt, curCosts[costVelocity], curGamestate->velocity[0][0], caseGamestate->velocity[0][0], maxXVelocity);
         compValue += REFLECT_INVOKE(compInt, curCosts[costVelocity], curGamestate->velocity[0][1], caseGamestate->velocity[0][1], maxYVelocity);
         compValue += REFLECT_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][0], caseGamestate->velocity[1][0], maxXVelocity);
-        compValue += REFLECT_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][0], caseGamestate->velocity[1][0], maxYVelocity);
+        compValue += REFLECT_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][1], caseGamestate->velocity[1][1], maxYVelocity);
     }
     else {
         compValue += REFLECT_INVOKE(compInt, curCosts[costVelocity], -curGamestate->velocity[0][0], caseGamestate->velocity[0][0], maxXVelocity);
         compValue += REFLECT_INVOKE(compInt, curCosts[costVelocity], curGamestate->velocity[0][1], caseGamestate->velocity[0][1], maxYVelocity);
         compValue += REFLECT_INVOKE(compInt, curCosts[costVelocityEnemy], -curGamestate->velocity[1][0], caseGamestate->velocity[1][0], maxXVelocity);
-        compValue += REFLECT_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][0], caseGamestate->velocity[1][0], maxYVelocity);
+        compValue += REFLECT_INVOKE(compInt, curCosts[costVelocityEnemy], curGamestate->velocity[1][1], caseGamestate->velocity[1][1], maxYVelocity);
     }
 
 
@@ -2545,11 +2545,11 @@ inline float comparisonFunctionDebug(Metadata * curGamestate, Metadata * caseGam
         testvalue += curCosts[costNonNeutralState];
     }
     compValue += testvalue;
-    compValue += REFLECT_INVOKE(compStateHash, curCosts[costEnemyState], curGamestate->getCurrentActionHash()[1], caseGamestate->getCurrentActionHash()[1]);
+    compValue += REFLECT_INVOKE(compState, curCosts[costEnemyState], curGamestate->getCurrentAction()[1], caseGamestate->getCurrentAction()[1]);
     //compValue += compStateHash(curGamestate->getCurrentActionHash()[1], caseGamestate->getCurrentActionHash()[1]) * costEnemyState;
-    compValue += REFLECT_INVOKE(compStateHash, curCosts[costlastAiState], curGamestate->getLastActionHash()[0], caseGamestate->getLastActionHash()[0]);
+    compValue += REFLECT_INVOKE(compState, curCosts[costlastAiState], curGamestate->getLastAction()[0], caseGamestate->getLastAction()[0]);
     //compValue += compStateHash(curGamestate->getLastActionHash()[0], caseGamestate->getLastActionHash()[0]) * costlastAiState;
-    compValue += REFLECT_INVOKE(compStateHash, curCosts[costlastEnemyState], curGamestate->getLastActionHash()[1], caseGamestate->getLastActionHash()[1]);
+    compValue += REFLECT_INVOKE(compState, curCosts[costlastEnemyState], curGamestate->getLastAction()[1], caseGamestate->getLastAction()[1]);
     //compValue += compStateHash(curGamestate->getLastActionHash()[1], caseGamestate->getLastActionHash()[1]) * costlastEnemyState;
     compValue += REFLECT_INVOKE(compNeutralState, curCosts[costAiNeutral], curGamestate->getNeutral()[0], caseGamestate->getNeutral()[0]);
     //compValue += compNeutralState(curGamestate->getNeutral()[0], caseGamestate->getNeutral()[0]) * costAiNeutral;

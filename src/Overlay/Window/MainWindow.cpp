@@ -93,6 +93,7 @@ void MainWindow::Draw()
 	DrawCBRAiSection();
 	//DrawReversalSection();
 	//DrawNetaSection();
+
 		
 	
 	DrawUtilButtons();
