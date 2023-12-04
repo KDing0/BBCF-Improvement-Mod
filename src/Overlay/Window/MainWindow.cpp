@@ -1,4 +1,4 @@
-#include "MainWindow.h"
+﻿#include "MainWindow.h"
 
 
 //#include "CBR/CharacterStorage.h"
@@ -548,7 +548,7 @@ void MainWindow::DrawCBRAiSection() const
 		return;
 
 	g_interfaces.cbrInterface.loadSettings(&g_interfaces.cbrInterface);
-
+	
 	if (g_interfaces.cbrInterface.debugErrorCounter[0] > 0) {
 		ImGui::Text("ErrorCountP1: %d", g_interfaces.cbrInterface.debugErrorCounter[0]);
 	}
@@ -564,6 +564,13 @@ void MainWindow::DrawCBRAiSection() const
 	{
 		ImGui::HorizontalSpacing();
 		ImGui::TextDisabled("CBR Menu only accesible in training, versus and online versus");
+		ImGui::Text("CBR AI Explenation:");
+		ImGui::SameLine(); // Move to the same line as the button
+		ImGui::SmallButton("?");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("CBR AI learns by recording player behaviour and imitating them, essentially letting you generate player clones.\nThis means the AI will only know how to do things that a player demonstrated beforehand.\nThis lets you create smarter AI opponents to play with, or even training dummys with behaviour finetuned for training.\nAn example of this would be a carl AI that only runs blockstrings, which lets you practice blocking carl.\n\nTo create an AI you must record yourself and/or your opponent by playing online, or use the CBR menu in training mode.\nIn training mode set the opponents behaviour to \"Controller\" to let the AI control them.\n\nYou can use instant learning in mirror matches to play against an AI while it learns.\nI recommend setting life to not regenerate to play normal rounds against the AI.\nThis gives the AI more chances to learn neutral, since it will be bad at everything while it has little data.\n\nYou can also download AI data from my server by pressing the CBR Filehost button after you logged into the Blazblue network.");
+		}
 		if (ImGui::Checkbox("Automatically Record Myself:", &g_interfaces.cbrInterface.autoRecordGameOwner)) {
 			g_interfaces.cbrInterface.saveSettings();
 		}
@@ -617,6 +624,11 @@ void MainWindow::DrawCBRAiSection() const
 				g_interfaces.cbrInterface.EndCbrActivities(0);
 			}
 		}
+		// Add a tooltip to the button
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Records all the actions of player 1,\n which the AI will then learn from.\nLearned data is stored in slot 1. \nClick to turn on and again to turn off.");
+		}
 		if (!(*g_gameVals.pGameMode == GameMode_Versus)) {
 			if (ImGui::Button("Replaying", buttonSize))
 			{
@@ -628,6 +640,10 @@ void MainWindow::DrawCBRAiSection() const
 				else {
 					g_interfaces.cbrInterface.EndCbrActivities(0);
 				}
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Let the AI take control of player 1s character.\n You need AI data stored in Slot 1 for this to work.\nClick to turn on and again to turn off.");
 			}
 		}
 		if (!(*g_gameVals.pGameMode == GameMode_Versus) && !g_interfaces.player1.IsCharDataNullPtr() && g_interfaces.player1.GetData()->charIndex == g_interfaces.player2.GetData()->charIndex) {
@@ -642,12 +658,20 @@ void MainWindow::DrawCBRAiSection() const
 					g_interfaces.cbrInterface.EndCbrActivities();
 				}
 			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The AI takes control over player 1 while learning in real time from player 2.\n Only use if you are player 2.\nStores data in slot 2.\nClick to turn on and again to turn off.");
+			}
 
 		}
 		if (ImGui::Button("Delete", buttonSize))
 		{
 			g_interfaces.cbrInterface.EndCbrActivities();
 			g_interfaces.cbrInterface.getCbrData(0)->deleteReplays(g_interfaces.cbrInterface.deletionStart, g_interfaces.cbrInterface.deletionEnd);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Deletes AI data in a certain range from the AI file in slot 1.\n The range to be deleted can be set in the \"Replay Deletion Range\" entry below.");
 		}
 		if (ImGui::Button("Save", buttonSize))
 		{
@@ -656,6 +680,10 @@ void MainWindow::DrawCBRAiSection() const
 			g_interfaces.cbrInterface.getCbrData(0)->setCharName(g_interfaces.player1.GetData()->char_abbr);
 			g_interfaces.cbrInterface.SaveCbrDataThreaded(*g_interfaces.cbrInterface.getCbrData(0), true);
 		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Save the AI data stored in slot 1.\n You can determine under what player name the data is stored by writing a name in the \"Player name: \" textbox");
+		}
 		if (ImGui::Button("Load", buttonSize)) {
 			g_interfaces.cbrInterface.EndCbrActivities();
 			m_pWindowContainer->GetWindow(WindowType_CbrServer)->ToggleOpen();
@@ -663,10 +691,18 @@ void MainWindow::DrawCBRAiSection() const
 			g_interfaces.cbrInterface.windowReload = true;
 			//g_interfaces.cbrInterface.setCbrData(g_interfaces.cbrInterface.LoadCbrData(g_interfaces.cbrInterface.playerName, g_interfaces.player1.GetData()->char_abbr), 0);
 		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Opens a window which lets you look at local AI data available to load for player 1.\nIf its empty you can download data from the server or create AI data yourself.");
+		}
 		if (ImGui::Button("Load By Name", buttonSize)) {
 			g_interfaces.cbrInterface.EndCbrActivities();
 			g_interfaces.cbrInterface.LoadCbrData(g_interfaces.cbrInterface.playerName, g_interfaces.player1.GetData()->char_abbr,true, 0);
 			//g_interfaces.cbrInterface.setCbrData(g_interfaces.cbrInterface.LoadCbrDataNoThread(g_interfaces.cbrInterface.playerName, g_interfaces.player1.GetData()->char_abbr), 0);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Lets you load AI data for player 1 by entering the name of the player below in \"Player name: \"");
 		}
 
 		ImGui::NextColumn();
@@ -686,7 +722,10 @@ void MainWindow::DrawCBRAiSection() const
 				g_interfaces.cbrInterface.EndCbrActivities(1);
 			}
 		}
-		
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Records all the actions of player 2,\n which the AI will then learn from. \n Learned data is stored in slot 2. \nClick to turn on and again to turn off.");
+		}
 		if (!(*g_gameVals.pGameMode == GameMode_Versus)) {
 			if (ImGui::Button("Replaying", buttonSize))
 			{
@@ -698,6 +737,10 @@ void MainWindow::DrawCBRAiSection() const
 				else {
 					g_interfaces.cbrInterface.EndCbrActivities(1);
 				}
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Let the AI take control of player 1s character.\n You need AI data stored in Slot 1 for this to work.\nClick to turn on and again to turn off.");
 			}
 		}
 		if (!(*g_gameVals.pGameMode == GameMode_Versus) && !g_interfaces.player1.IsCharDataNullPtr() && g_interfaces.player1.GetData()->charIndex == g_interfaces.player2.GetData()->charIndex) {
@@ -712,11 +755,19 @@ void MainWindow::DrawCBRAiSection() const
 					g_interfaces.cbrInterface.EndCbrActivities();
 				}
 			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The AI takes control over player 2 while learning in real time from player 1.\n Only use if you are player 1.\nStores data in slot 1.\nClick to turn on and again to turn off.");
+			}
 		}
 		if (ImGui::Button("Delete", buttonSize))
 		{
 			g_interfaces.cbrInterface.EndCbrActivities();
 			g_interfaces.cbrInterface.getCbrData(1)->deleteReplays(g_interfaces.cbrInterface.deletionStart, g_interfaces.cbrInterface.deletionEnd);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Deletes AI data in a certain range from the AI file in slot 2.\n The range to be deleted can be set in the \"Replay Deletion Range\" entry below.");
 		}
 		if (ImGui::Button("Save", buttonSize))
 		{
@@ -725,6 +776,10 @@ void MainWindow::DrawCBRAiSection() const
 			g_interfaces.cbrInterface.getCbrData(1)->setCharName(g_interfaces.player2.GetData()->char_abbr);
 			g_interfaces.cbrInterface.SaveCbrDataThreaded(*g_interfaces.cbrInterface.getCbrData(1), true);
 		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Save the AI data stored in slot 2.\n You can determine under what player name the data is stored by writing a name in the \"Player name: \" textbox");
+		}
 		if (ImGui::Button("Load", buttonSize)) {
 			g_interfaces.cbrInterface.EndCbrActivities();
 			m_pWindowContainer->GetWindow(WindowType_CbrServer)->ToggleOpen();
@@ -732,10 +787,18 @@ void MainWindow::DrawCBRAiSection() const
 			g_interfaces.cbrInterface.windowReload = true;
 			//g_interfaces.cbrInterface.setCbrData(g_interfaces.cbrInterface.LoadCbrData(g_interfaces.cbrInterface.playerName, g_interfaces.player2.GetData()->char_abbr), 1);
 		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Opens a window which lets you look at local AI data available to load for player 2.\nIf its empty you can download data from the server or create AI data yourself.");
+		}
 		if (ImGui::Button("Load By Name", buttonSize)) {
 			g_interfaces.cbrInterface.EndCbrActivities();
 			g_interfaces.cbrInterface.LoadCbrData(g_interfaces.cbrInterface.playerName, g_interfaces.player2.GetData()->char_abbr, true, 1);
 			//g_interfaces.cbrInterface.setCbrData(g_interfaces.cbrInterface.LoadCbrDataNoThread(g_interfaces.cbrInterface.playerName, g_interfaces.player2.GetData()->char_abbr), 1);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Lets you load AI data for player 2 by entering the name of the player below in \"Player name: \"");
 		}
 
 		ImGui::PopID();
@@ -756,10 +819,14 @@ void MainWindow::DrawCBRAiSection() const
 					g_interfaces.cbrInterface.EndCbrActivities();
 				}
 			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("If both slots have AI data you can use this button to have the AI control both characters.\n\nClick to turn on and again to turn off.");
+			}
 			ImGui::Separator();
 		}
 		ImGui::Text(g_interfaces.cbrInterface.WriteAiInterfaceState().c_str());
-		ImGui::Text("Input Savefile name here:");
+		ImGui::Text("Player name:");
 		ImGui::PushID(177);
 		ImGui::InputText("", g_interfaces.cbrInterface.playerName, IM_ARRAYSIZE(g_interfaces.cbrInterface.playerName));
 		ImGui::PopID();
@@ -767,6 +834,7 @@ void MainWindow::DrawCBRAiSection() const
 		ImGui::PushItemWidth(80);
 		ImGui::DragIntRange2("", &g_interfaces.cbrInterface.deletionStart, &g_interfaces.cbrInterface.deletionEnd, 1.0F, 0);
 		ImGui::PushItemWidth(0);
+		/*
 		if (!g_interfaces.player1.IsCharDataNullPtr()) {
 			ImGui::TextUnformatted(g_interfaces.player1.GetData()->char_abbr);
 			//ImGui::Text("hitstop %d", g_interfaces.player1.GetData()->hitstop);
@@ -775,7 +843,7 @@ void MainWindow::DrawCBRAiSection() const
 		
 		ImGui::Text("CaseInstance: %d - %d", g_interfaces.cbrInterface.getCbrData(0)->debugCounter, g_interfaces.cbrInterface.getCbrData(1)->debugCounter);
 		//ImGui::Text(g_interfaces.player1.getCbrData()->debugText.c_str());
-		
+		*/
 
 		if (!g_interfaces.player1.IsCharDataNullPtr()) {
 			/*
