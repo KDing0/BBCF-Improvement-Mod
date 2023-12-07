@@ -560,18 +560,19 @@ void MainWindow::DrawCBRAiSection() const
 		ImGui::TextDisabled("SAVING OR LOADING CBR DATA. \nPLEASE WAIT.");
 		return;
 	}
+	ImGui::Text("CBR AI Explenation:");
+	ImGui::SameLine(); // Move to the same line as the button
+	ImGui::SmallButton("?");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("CBR AI learns by recording player behaviour and imitating them, essentially letting you generate player clones.\nThis means the AI will only know how to do things that a player demonstrated beforehand.\nThis lets you create smarter AI opponents to play with, or even training dummys with behaviour finetuned for training.\nAn example of this would be a carl AI that only runs blockstrings, which lets you practice blocking carl.\n\nTo create an AI you must record yourself and/or your opponent by playing online, or use the CBR menu in training mode.\nIn training mode set the opponents behaviour to \"Controller\" to let the AI control them.\n\nYou can use instant learning in mirror matches to play against an AI while it learns.\nI recommend setting life to not regenerate to play normal rounds against the AI.\nThis gives the AI more chances to learn neutral, since it will be bad at everything while it has little data.\n\nYou can also download AI data from my server by pressing the CBR Filehost button after you logged into the Blazblue network.");
+	}
 	if (!isInMatch() || !(*g_gameVals.pGameMode == GameMode_Training || *g_gameVals.pGameMode == GameMode_Versus || 
 		*g_gameVals.pGameMode == GameMode_Online) )
 	{
 		ImGui::HorizontalSpacing();
 		ImGui::TextDisabled("CBR Menu only accesible in training, versus and online versus");
-		ImGui::Text("CBR AI Explenation:");
-		ImGui::SameLine(); // Move to the same line as the button
-		ImGui::SmallButton("?");
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("CBR AI learns by recording player behaviour and imitating them, essentially letting you generate player clones.\nThis means the AI will only know how to do things that a player demonstrated beforehand.\nThis lets you create smarter AI opponents to play with, or even training dummys with behaviour finetuned for training.\nAn example of this would be a carl AI that only runs blockstrings, which lets you practice blocking carl.\n\nTo create an AI you must record yourself and/or your opponent by playing online, or use the CBR menu in training mode.\nIn training mode set the opponents behaviour to \"Controller\" to let the AI control them.\n\nYou can use instant learning in mirror matches to play against an AI while it learns.\nI recommend setting life to not regenerate to play normal rounds against the AI.\nThis gives the AI more chances to learn neutral, since it will be bad at everything while it has little data.\n\nYou can also download AI data from my server by pressing the CBR Filehost button after you logged into the Blazblue network.");
-		}
+		
 		if (ImGui::Checkbox("Automatically Record Myself:", &g_interfaces.cbrInterface.autoRecordGameOwner)) {
 			g_interfaces.cbrInterface.saveSettings();
 		}
