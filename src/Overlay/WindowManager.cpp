@@ -225,15 +225,26 @@ void WindowManager::Render()
 	LOG(7, "WindowManager::Render\n");
 
 	HandleButtons();
-
-	if (g_interfaces.cbrInterface.autoRecordFinished == true) {
+	static bool autoRecord2nd;
+	if (g_interfaces.cbrInterface.autoRecordFinished == true || autoRecord2nd && g_interfaces.cbrInterface.pMatchState != 16 && g_interfaces.cbrInterface.pMatchState != 15) {
 		if (g_interfaces.cbrInterface.autoRecordConfirmation == 1) {
 			g_notificationBar->AddNotification("Currently %s replays unsaved. Press %s to save them or Press %s to discard them.", std::to_string(g_interfaces.cbrInterface.getAutoRecordReplayAmount()).c_str(), Settings::settingsIni.saveCBRbutton.c_str(), Settings::settingsIni.discardCBRbutton.c_str());
 		}
 		else {
-			g_interfaces.cbrInterface.autoRecordSaveCompleted = false;
-			g_notificationBar->AddNotification("Saving Replay... Press %s to delete the last replay after saving is complete.",  Settings::settingsIni.discardCBRbutton.c_str());
-			g_interfaces.cbrInterface.threadSaveReplay(true);
+			int stateVal = stateChange(*g_gameVals.pGameState);
+			if (stateVal == 16) {
+				g_notificationBar->AddNotification("Replay Added. To save go to character select or back to the lobby/menu.");
+				autoRecord2nd = true;
+				g_interfaces.cbrInterface.autoRecordSaveCompleted = false;
+			}
+
+			if (autoRecord2nd == true  && stateVal != 15 && stateVal != 16 && stateVal != -1) {
+				g_interfaces.cbrInterface.autoRecordSaveCompleted = false;
+				g_notificationBar->AddNotification("Saving Replay... Press %s to delete the last replay after saving is complete.", Settings::settingsIni.discardCBRbutton.c_str());
+				g_interfaces.cbrInterface.threadSaveReplay(true);
+				autoRecord2nd = false;
+			}
+			
 		}
 		
 		g_interfaces.cbrInterface.autoRecordFinished = false;
