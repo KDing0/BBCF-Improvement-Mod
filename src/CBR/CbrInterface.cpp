@@ -1155,6 +1155,8 @@ void CbrInterface::StartCbrInstantLearning(char* p1charName, char* p2charName, i
 	getCbrData(cbr)->setInstantLearnReplay(cbrReplay);
 }
 
+
+
 void CbrInterface::threadSaveReplay(bool save) {
 	
 	//saveReplayDataInMenu();

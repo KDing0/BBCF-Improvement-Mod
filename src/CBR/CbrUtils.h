@@ -125,3 +125,12 @@ inline std::string getCharacterNameFromID(int id) {
 	return "";
 }
 
+inline int stateChange(int state) {
+	static int oldState = -1;
+	if (oldState != state) {
+		oldState = state;
+		return state;
+	}
+	oldState = state;
+	return -1;
+}
