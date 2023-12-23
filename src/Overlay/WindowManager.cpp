@@ -218,79 +218,7 @@ void WindowManager::Render()
 	LOG(7, "WindowManager::Render\n");
 
 	HandleButtons();
-	static bool autoRecord2nd;
-	if (g_interfaces.cbrInterface.autoRecordFinished == true || autoRecord2nd && g_interfaces.cbrInterface.pMatchState != 16 && g_interfaces.cbrInterface.pMatchState != 15) {
-		if (g_interfaces.cbrInterface.autoRecordConfirmation == 1) {
-			g_notificationBar->AddNotification("Currently %s replays unsaved. Press %s to save them or Press %s to discard them.", std::to_string(g_interfaces.cbrInterface.getAutoRecordReplayAmount()).c_str(), Settings::settingsIni.saveCBRbutton.c_str(), Settings::settingsIni.discardCBRbutton.c_str());
-		}
-		else {
-			int stateVal = stateChange(*g_gameVals.pGameState);
-			if (stateVal == 16) {
-				g_notificationBar->AddNotification("Replay Added. To save go to character select or back to the lobby/menu.");
-				autoRecord2nd = true;
-				g_interfaces.cbrInterface.autoRecordSaveCompleted = false;
-			}
-
-			if (autoRecord2nd == true  && stateVal != 15 && stateVal != 16 && stateVal != -1) {
-				g_interfaces.cbrInterface.autoRecordSaveCompleted = false;
-				g_notificationBar->AddNotification("Saving Replay... Press %s to delete the last replay after saving is complete.", Settings::settingsIni.discardCBRbutton.c_str());
-				g_interfaces.cbrInterface.threadSaveReplay(true);
-				autoRecord2nd = false;
-			}
-			
-		}
-		
-		g_interfaces.cbrInterface.autoRecordFinished = false;
-	}
-	if (g_interfaces.cbrInterface.autoRecordConfirmation == 1 && ImGui::IsKeyPressed(keyCBRsave, false)) {
-		if ( g_interfaces.cbrInterface.recordBufferP1.size() > 0 || g_interfaces.cbrInterface.recordBufferP2.size() > 0) {
-			if (!isInMatch()) {
-				g_notificationBar->AddNotification("Replays beeing saved, please dont close the game or save untill finished");
-				g_interfaces.cbrInterface.threadSaveReplay(true);
-			}
-			else {
-				g_notificationBar->AddNotification("Cant save during a match.");
-			}
-		}
-		else {
-			g_notificationBar->AddNotification("No Replays to save");
-		}
-		
-	}
-	if (g_interfaces.cbrInterface.autoRecordConfirmation == 1 && ImGui::IsKeyPressed(keyCBRdiscard, false)) {
-		if (g_interfaces.cbrInterface.recordBufferP1.size() > 0 || g_interfaces.cbrInterface.recordBufferP2.size() > 0) {
-			g_notificationBar->AddNotification("Replays Deleted");
-			g_interfaces.cbrInterface.clearAutomaticRecordReplays();
-		}
-		else {
-			g_notificationBar->AddNotification("No Replays to save");
-		}
-	}
-	if (g_interfaces.cbrInterface.threadCheckSaving()) {
-		g_notificationBar->AddNotification("Saving Completed");
-	}
-	if (g_interfaces.cbrInterface.autoRecordConfirmation == 0 && ImGui::IsKeyPressed(keyCBRdiscard, false)) {
-		if (g_interfaces.cbrInterface.autoRecordSaveCompleted == true) {
-			g_notificationBar->AddNotification("Replays being deleted");
-			static std::vector<std::string> filenames;
-			filenames.clear();
-			if (g_interfaces.cbrInterface.autoRecordDeletionAmount[0] > 0) {
-				filenames.push_back(g_interfaces.cbrInterface.makeFilenameCbr(g_interfaces.cbrInterface.autoRecordSaveCompletedChar[0], g_interfaces.cbrInterface.autoRecordSaveCompletedName[0]));
-			}
-			if (g_interfaces.cbrInterface.autoRecordDeletionAmount[1] > 0) {
-				filenames.push_back(g_interfaces.cbrInterface.makeFilenameCbr(g_interfaces.cbrInterface.autoRecordSaveCompletedChar[1], g_interfaces.cbrInterface.autoRecordSaveCompletedName[1]));
-			}
-			
-			g_interfaces.cbrInterface.LoadnDeleteCbrData(filenames, true, g_interfaces.cbrInterface.autoUploadOwnData, g_interfaces.cbrInterface.autoRecordDeletionAmount[0]);
-		}
-		else {
-			g_notificationBar->AddNotification("No Replays to delete or currently saving replays.");
-		}
-	}
-	if (g_interfaces.cbrInterface.threadCheckSaving()) {
-		g_notificationBar->AddNotification("Saving Completed");
-	}
-
+	CbrUIManagement();
 
 	ImGui_ImplDX9_NewFrame();
 
@@ -361,5 +289,57 @@ void WindowManager::DrawAllWindows() const
 	for (const auto& window : m_windowContainer->GetWindows())
 	{
 		window.second->Update();
+	}
+}
+
+void WindowManager::CbrUIManagement() {
+	int stateVal = stateChange(*g_gameVals.pGameState);
+	if (g_interfaces.cbrInterface.autoRecordFinished == true ) {
+		if (g_interfaces.cbrInterface.autoRecordConfirmation == false && stateVal == 16) {
+			g_notificationBar->AddNotification("Currently %s replays unsaved. Press %s to save or %s to discard them.", std::to_string(g_interfaces.cbrInterface.getAutoRecordReplayAmount()).c_str(), Settings::settingsIni.saveCBRbutton.c_str(), Settings::settingsIni.discardCBRbutton.c_str());
+		}
+		if (g_interfaces.cbrInterface.autoRecordConfirmation == true && stateVal == 16) {
+			g_notificationBar->AddNotification("Currently %s replays unsaved. Press %s or return to lobby/character select to save or press %s to discard them. ", std::to_string(g_interfaces.cbrInterface.getAutoRecordReplayAmount()).c_str(), Settings::settingsIni.saveCBRbutton.c_str(), Settings::settingsIni.discardCBRbutton.c_str());
+
+			g_interfaces.cbrInterface.autoRecordSaveCompleted = false;
+		}
+		g_interfaces.cbrInterface.autoRecordFinished = false;
+	}
+
+	if (g_interfaces.cbrInterface.autoRecordConfirmation == true && stateVal != 14 && stateVal != 15 && stateVal != 16 && stateVal != -1 && (g_interfaces.cbrInterface.recordBufferP1.size() > 0 || g_interfaces.cbrInterface.recordBufferP2.size() > 0)) {
+		g_interfaces.cbrInterface.autoRecordSaveCompleted = false;
+		g_notificationBar->AddNotification("Saving Replays... please dont close the game");
+		g_interfaces.cbrInterface.threadSaveReplay(true);
+	}
+
+	if (ImGui::IsKeyPressed(keyCBRsave, false)) {
+		if (g_interfaces.cbrInterface.recordBufferP1.size() > 0 || g_interfaces.cbrInterface.recordBufferP2.size() > 0) {
+			if (!isInMatch()) {
+				g_notificationBar->AddNotification("Saving Replays... please dont close the game");
+				g_interfaces.cbrInterface.threadSaveReplay(true);
+			}
+			else {
+				g_notificationBar->AddNotification("Cant save during a match.");
+			}
+		}
+		else {
+			g_notificationBar->AddNotification("No Replays to save");
+		}
+
+	}
+	if (ImGui::IsKeyPressed(keyCBRdiscard, false)) {
+		if (g_interfaces.cbrInterface.recordBufferP1.size() > 0 || g_interfaces.cbrInterface.recordBufferP2.size() > 0) {
+			g_notificationBar->AddNotification("Replays Deleted");
+			g_interfaces.cbrInterface.clearAutomaticRecordReplays();
+		}
+		else {
+			g_notificationBar->AddNotification("No Replays to save");
+		}
+	}
+	if (g_interfaces.cbrInterface.threadCheckSaving()) {
+		g_notificationBar->AddNotification("Saving Completed");
+	}
+	if (g_interfaces.cbrInterface.threadCheckSaving()) {
+		g_notificationBar->AddNotification("Saving Completed");
 	}
 }

@@ -22,7 +22,7 @@ private:
 	WindowManager() = default;
 	void HandleButtons();
 	void DrawAllWindows() const;
-
+	void CbrUIManagement();
 	static WindowManager* m_instance;
 	bool m_initialized = false;
 	WindowContainer* m_windowContainer = nullptr;

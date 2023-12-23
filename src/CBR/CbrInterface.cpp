@@ -922,7 +922,10 @@ void CbrInterface::clearAutomaticRecordReplays() {
 	recordBufferP1.clear();
 	recordBufferP2.clear();
 }
-
+void CbrInterface::deleteAutomaticRecordReplays(int deletionAmount) {
+	recordBufferP1.erase(recordBufferP1.end() - deletionAmount, recordBufferP1.end());
+	recordBufferP2.erase(recordBufferP2.end() - deletionAmount, recordBufferP2.end());
+}
 void CbrInterface::resetCbrInterface() {
 	readDepth = { 99,99 };
 	writeDepth = { -1,-1 };
@@ -1235,7 +1238,7 @@ void CbrInterface::loadSettings(CbrInterface* cbrI) {
 		cbrI->autoRecordGameOwner = true;
 		cbrI->autoRecordAllOtherPlayers = true;
 		cbrI->autoUploadOwnData = true;
-		cbrI->autoRecordConfirmation = 0;
+		cbrI->autoRecordConfirmation = true;
 	}
 
 }
