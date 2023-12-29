@@ -27,6 +27,7 @@ public:
     AnnotatedReplay::AnnotatedReplay(std::string n, std::string p1, std::string p2, int p1Id, int p2Id);
     void AddFrame(std::shared_ptr<Metadata>, int);
     std::vector<int> getInput();
+    std::vector<int>* AnnotatedReplay::getInputPtr();
     std::vector<int> copyInput();
     int AnnotatedReplay::getInputSize();
     std::vector<std::shared_ptr<Metadata>>* getAllMetadata();

@@ -44,6 +44,7 @@ public:
 
 	int getAutoRecordReplayAmount();
 	void clearAutomaticRecordReplays();
+	void deleteAutomaticRecordReplays(int deletionAmount);
 	void CbrInterface::threadSaveReplay(bool save);
 	std::string CbrInterface::threadStatus();
 
@@ -88,7 +89,7 @@ public:
 	bool cbrSettingsLoaded = false;
 	bool autoRecordGameOwner = true;
 	bool autoRecordAllOtherPlayers = true;
-	int  autoRecordConfirmation = 0;
+	bool autoRecordConfirmation = true;
 	bool autoRecordActive = false;
 	bool autoRecordFinished = false;
 	bool autoUploadOwnData = true;
@@ -171,7 +172,7 @@ public:
 	void CbrInterface::RestartCbrActivities(char* p1charName, char* p2charName, int p1charId, int p2charId);
 	void CbrInterface::resetCbrInterface();
 
-	void EndCbrActivities(int playerNr);
+	void EndCbrActivities(int playerNr, bool trim = false);
 
 	void CbrInterface::UpdateOldCbrMetadata();
 

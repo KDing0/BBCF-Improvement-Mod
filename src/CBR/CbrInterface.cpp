@@ -922,7 +922,10 @@ void CbrInterface::clearAutomaticRecordReplays() {
 	recordBufferP1.clear();
 	recordBufferP2.clear();
 }
-
+void CbrInterface::deleteAutomaticRecordReplays(int deletionAmount) {
+	recordBufferP1.erase(recordBufferP1.end() - deletionAmount, recordBufferP1.end());
+	recordBufferP2.erase(recordBufferP2.end() - deletionAmount, recordBufferP2.end());
+}
 void CbrInterface::resetCbrInterface() {
 	readDepth = { 99,99 };
 	writeDepth = { -1,-1 };
@@ -940,7 +943,7 @@ void CbrInterface::resetCbrInterface() {
 void CbrInterface::EndCbrActivities() {
 	EndCbrActivities(2);
 }
-void CbrInterface::EndCbrActivities(int playerNr) {
+void CbrInterface::EndCbrActivities(int playerNr, bool trim) {
 	resetCbrInterface();
 	cbrData[0].resetCbr();
 	cbrData[1].resetCbr();
@@ -969,7 +972,7 @@ void CbrInterface::EndCbrActivities(int playerNr) {
 
 		if (anReplay->getInputSize() >= 10) {
 			auto cbrReplay = CbrReplayFile(anReplay->getCharacterName(), anReplay->getCharIds());
-			auto err = cbrReplay.makeFullCaseBase(anReplay, anReplay->getFocusCharName());
+			auto err = cbrReplay.makeFullCaseBase(anReplay, anReplay->getFocusCharName(), trim);
 			debugErrorCounter[0] += err.errorCount;
 			if(err.structure != ""){ saveStructureDebug(err.structure); }
 			if(err.errorCount == 0){
@@ -1235,7 +1238,7 @@ void CbrInterface::loadSettings(CbrInterface* cbrI) {
 		cbrI->autoRecordGameOwner = true;
 		cbrI->autoRecordAllOtherPlayers = true;
 		cbrI->autoUploadOwnData = true;
-		cbrI->autoRecordConfirmation = 0;
+		cbrI->autoRecordConfirmation = true;
 	}
 
 }
