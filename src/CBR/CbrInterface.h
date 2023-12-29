@@ -172,7 +172,7 @@ public:
 	void CbrInterface::RestartCbrActivities(char* p1charName, char* p2charName, int p1charId, int p2charId);
 	void CbrInterface::resetCbrInterface();
 
-	void EndCbrActivities(int playerNr);
+	void EndCbrActivities(int playerNr, bool trim = false);
 
 	void CbrInterface::UpdateOldCbrMetadata();
 

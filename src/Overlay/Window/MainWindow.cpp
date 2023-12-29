@@ -515,11 +515,11 @@ void MainWindow::DrawCBRAiSection() const
 		if (ImGui::Button("Record", buttonSize))
 		{
 			if (g_interfaces.cbrInterface.Recording == false) {
-				g_interfaces.cbrInterface.EndCbrActivities(0);
+				g_interfaces.cbrInterface.EndCbrActivities(0 );
 				g_interfaces.cbrInterface.StartCbrRecording(g_interfaces.player1.GetData()->char_abbr, g_interfaces.player2.GetData()->char_abbr, g_interfaces.player1.GetData()->charIndex, g_interfaces.player2.GetData()->charIndex, 0);
 			}
 			else {
-				g_interfaces.cbrInterface.EndCbrActivities(0);
+				g_interfaces.cbrInterface.EndCbrActivities(0, true);
 			}
 		}
 		if (!(*g_gameVals.pGameMode == GameMode_Versus)) {
@@ -610,7 +610,7 @@ void MainWindow::DrawCBRAiSection() const
 				g_interfaces.cbrInterface.StartCbrRecording(g_interfaces.player2.GetData()->char_abbr, g_interfaces.player1.GetData()->char_abbr, g_interfaces.player2.GetData()->charIndex, g_interfaces.player1.GetData()->charIndex, 1);
 			}
 			else {
-				g_interfaces.cbrInterface.EndCbrActivities(1);
+				g_interfaces.cbrInterface.EndCbrActivities(1, true);
 			}
 		}
 

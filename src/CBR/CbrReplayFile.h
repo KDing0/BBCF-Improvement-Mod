@@ -65,7 +65,7 @@ public:
     std::vector<CommandActions> FetchCommandActions(std::string&);
     std::vector<CommandActions> CbrReplayFile::FetchNirvanaCommandActions();
     CbrGenerationError instantLearning(AnnotatedReplay*, std::string);
-    CbrGenerationError CbrReplayFile::makeFullCaseBase(AnnotatedReplay*, std::string);
+    CbrGenerationError CbrReplayFile::makeFullCaseBase(AnnotatedReplay*, std::string, bool trim = false);
     bool checkDirectionInputs(int direction, int input);
     bool isDirectionInputs(int direction);
     std::array<int, 2>& CbrReplayFile::getCharIds();

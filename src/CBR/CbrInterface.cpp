@@ -943,7 +943,7 @@ void CbrInterface::resetCbrInterface() {
 void CbrInterface::EndCbrActivities() {
 	EndCbrActivities(2);
 }
-void CbrInterface::EndCbrActivities(int playerNr) {
+void CbrInterface::EndCbrActivities(int playerNr, bool trim) {
 	resetCbrInterface();
 	cbrData[0].resetCbr();
 	cbrData[1].resetCbr();
@@ -972,7 +972,7 @@ void CbrInterface::EndCbrActivities(int playerNr) {
 
 		if (anReplay->getInputSize() >= 10) {
 			auto cbrReplay = CbrReplayFile(anReplay->getCharacterName(), anReplay->getCharIds());
-			auto err = cbrReplay.makeFullCaseBase(anReplay, anReplay->getFocusCharName());
+			auto err = cbrReplay.makeFullCaseBase(anReplay, anReplay->getFocusCharName(), trim);
 			debugErrorCounter[0] += err.errorCount;
 			if(err.structure != ""){ saveStructureDebug(err.structure); }
 			if(err.errorCount == 0){

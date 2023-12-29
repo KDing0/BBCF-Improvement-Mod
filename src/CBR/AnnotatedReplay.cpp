@@ -70,6 +70,11 @@ std::vector<int> AnnotatedReplay::getInput()
     return input;
 }
 
+std::vector<int>* AnnotatedReplay::getInputPtr()
+{
+    return &input;
+}
+
 std::string AnnotatedReplay::getPlayerName() {
     return playerName;
 }

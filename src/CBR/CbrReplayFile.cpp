@@ -586,7 +586,45 @@ CbrGenerationError CbrReplayFile::instantLearning(AnnotatedReplay* ar, std::stri
     return ret;
 }
 
-CbrGenerationError CbrReplayFile::makeFullCaseBase(AnnotatedReplay* ar, std::string charName) {
+void trimIdleInReplay(AnnotatedReplay* ar) {
+    int start = ar->getInput().size() - 1;
+    int end = start;
+    for (int i = start; i > 0; i--) {
+        if (ar->getInput()[i] != 5 || ar->ViewMetadata(i).getNeutral()[0] == false) {
+            end = i;
+            break;
+        }
+    }
+    auto input = ar->getInputPtr();
+    auto meta = ar->getAllMetadata();
+    if (end != start) {
+        input->erase(std::next(input->begin(), end + 1), std::next(input->begin(), start));
+        meta->erase(std::next(meta->begin(), end + 1), std::next(meta->begin(), start));
+    }
+
+    start = input->size() - 1;
+    end = 0;
+    for (int i = 0; i <= start; i++) {
+        if (input->at(i) != 5 || ar->ViewMetadata(i).getNeutral()[0] == false) {
+            end = i;
+            break;
+        }
+    }
+    if (end != 0) {
+        input->erase(input->begin(), input->begin() + end - 1);
+        meta->erase(meta->begin(), meta->begin() + end - 1);
+    }
+
+
+}
+
+CbrGenerationError CbrReplayFile::makeFullCaseBase(AnnotatedReplay* ar, std::string charName, bool trim) {
+
+    if (trim) {
+        trimIdleInReplay(ar);
+    }
+    
+
     CbrGenerationError ret;
     ret.errorCount = 0;
     ret.errorDetail = "";
@@ -598,6 +636,8 @@ CbrGenerationError CbrReplayFile::makeFullCaseBase(AnnotatedReplay* ar, std::str
         ret.errorDetail = "0 size replay";
         return ret;
     }
+
+
 
     auto testCopy = *ar;
     ret = MakeCaseBase(ar, charName, start, end, 0);
