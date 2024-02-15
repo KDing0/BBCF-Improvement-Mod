@@ -17,7 +17,7 @@
 #include <Core/interfaces.h>
 
 
-
+#define DebugPrint false
 
 
 
@@ -25,6 +25,7 @@
 
 
 void CbrInterface::saveDebugPrint() {
+	if (!DebugPrint) { return; }
 	boost::filesystem::path dir("CBRsave");
 	if (!(boost::filesystem::exists(dir))) {
 		boost::filesystem::create_directory(dir);
@@ -658,8 +659,7 @@ void CbrInterface::LoadnDeleteCbrDataExec(std::vector<std::string>& filename, bo
 }
 
 CbrData CbrInterface::LoadCbrDataNoThread(std::string playerName, std::string characterName) {
-	std::string filename = ".\\CBRsave\\";
-	filename = filename + characterName + playerName + ".cbr";
+	std::string filename = makeFilenameCbr(playerName, characterName);
 	return LoadCbrDataNoThread(filename);
 }
 
@@ -791,7 +791,7 @@ CbrData CbrInterface::LoadCbrDataNoThread(std::string filename) {
 
 std::string CbrInterface::makeFilenameCbr(std::string playerName, std::string characterName) {
 	std::string filename = "CBRsave\\";
-	filename = filename + playerName + characterName + ".cbr";
+	filename = filename +  characterName + playerName  + ".cbr";
 	return filename;
 }
 
@@ -940,6 +940,20 @@ void CbrInterface::resetCbrInterface() {
 	cbrData[1].resetReplayVariables();
 }
 
+void cbrDebugSave(CbrData& cbrData) {
+	if (!DebugPrint) { return; }
+	boost::filesystem::path dir("CBRsave");
+	if (!(boost::filesystem::exists(dir))) {
+		boost::filesystem::create_directory(dir);
+	}
+	auto filename = ".\\CBRsave\\cbrDebug.txt";
+	std::ofstream outfile(filename);
+	for (std::size_t i = 0; i < cbrData.debugTextArr.size(); ++i) {
+		outfile << cbrData.debugTextArr[i];
+	}
+	cbrData.debugTextArr.clear();
+}
+
 void CbrInterface::EndCbrActivities() {
 	EndCbrActivities(2);
 }
@@ -1019,30 +1033,11 @@ void CbrInterface::EndCbrActivities(int playerNr, bool trim) {
 
 
 	if ((playerNr == 0 || playerNr == 2) && Replaying == true) {
-		boost::filesystem::path dir("CBRsave");
-		if (!(boost::filesystem::exists(dir))) {
-			boost::filesystem::create_directory(dir);
-		}
-		auto filename = ".\\CBRsave\\cbrDebug.txt";
-		std::ofstream outfile(filename);
-		for (std::size_t i = 0; i < cbrData[0].debugTextArr.size(); ++i) {
-			outfile << cbrData[0].debugTextArr[i];
-		}
-		cbrData[0].debugTextArr.clear();
+		cbrDebugSave(cbrData[0]);
 		Replaying = false;
 	}
 	if ((playerNr == 1 || playerNr == 2) && ReplayingP2 == true) {
-		boost::filesystem::path dir("CBRsave");
-		if (!(boost::filesystem::exists(dir))) {
-			boost::filesystem::create_directory(dir);
-		}
-		auto filename = ".\\CBRsave\\cbrDebug.txt";
-		std::ofstream outfile(filename);
-		
-		for (std::size_t i = 0; i < cbrData[1].debugTextArr.size(); ++i) {
-			outfile << cbrData[1].debugTextArr[i];
-		}
-		cbrData[1].debugTextArr.clear();
+		cbrDebugSave(cbrData[1]);
 		ReplayingP2 = false;
 	}
 	if (instantLearning == true) {
@@ -1074,17 +1069,7 @@ void CbrInterface::EndCbrActivities(int playerNr, bool trim) {
 			cbrCreationDebugStr += err.errorDetail;
 			saveDebug();
 		}
-		boost::filesystem::path dir("CBRsave");
-		if (!(boost::filesystem::exists(dir))) {
-			boost::filesystem::create_directory(dir);
-		}
-		auto filename = ".\\CBRsave\\cbrDebug.txt";
-		std::ofstream outfile(filename);
-
-		for (std::size_t i = 0; i < data->debugTextArr.size(); ++i) {
-			outfile << data->debugTextArr[i];
-		}
-		data->debugTextArr.clear();
+		cbrDebugSave(*data);
 		instantLearning = 0;
 	}
 
@@ -1111,17 +1096,7 @@ void CbrInterface::EndCbrActivities(int playerNr, bool trim) {
 			cbrCreationDebugStr += err.errorDetail;
 			saveDebug();
 		}
-		boost::filesystem::path dir("CBRsave");
-		if (!(boost::filesystem::exists(dir))) {
-			boost::filesystem::create_directory(dir);
-		}
-		auto filename = ".\\CBRsave\\cbrDebug.txt";
-		std::ofstream outfile(filename);
-
-		for (std::size_t i = 0; i < data->debugTextArr.size(); ++i) {
-			outfile << data->debugTextArr[i];
-		}
-		data->debugTextArr.clear();
+		cbrDebugSave(*data);
 		instantLearningP2 = 0;
 	}
 
@@ -1396,8 +1371,7 @@ std::string CbrInterface::WriteAiInterfaceState() {
 	if (instantLearningP2) {
 		str += " - InstantLearningP2";
 	}
-	str += "\n FAP1: " + std::to_string(cbrData[0].framesActive);
-	str += "\n FAP2: " + std::to_string(cbrData[1].framesActive);
+	str += "\nFA1: " + std::to_string(cbrData[0].framesActive) + " - " + std::to_string(cbrData[1].framesActive);
 	return str;
 }
 void CbrInterface::RestartCbrActivities(char* p1charName, char* p2charName, int p1charId, int p2charId) {
@@ -1459,31 +1433,13 @@ void CbrInterface::RestartCbrActivities(char* p1charName, char* p2charName, int 
 	if (Replaying == true) {
 		auto data = getCbrData(0);
 		auto anReplay = getAnnotatedReplay(0);
-		boost::filesystem::path dir("CBRsave");
-		if (!(boost::filesystem::exists(dir))) {
-			boost::filesystem::create_directory(dir);
-		}
-		auto filename = ".\\CBRsave\\cbrDebug.txt";
-		std::ofstream outfile(filename);
-		for (std::size_t i = 0; i < data->debugTextArr.size(); ++i) {
-			outfile << data->debugTextArr[i];
-		}
-		data->debugTextArr.clear();
+		cbrDebugSave(*data);
 	}
 
 	if (ReplayingP2 == true) {
 		auto data = getCbrData(1);
 		auto anReplay = getAnnotatedReplay(1);
-		boost::filesystem::path dir("CBRsave");
-		if (!(boost::filesystem::exists(dir))) {
-			boost::filesystem::create_directory(dir);
-		}
-		auto filename = ".\\CBRsave\\cbrDebug.txt";
-		std::ofstream outfile(filename);
-		for (std::size_t i = 0; i < data->debugTextArr.size(); ++i) {
-			outfile << data->debugTextArr[i];
-		}
-		data->debugTextArr.clear();
+		cbrDebugSave(*data);
 	}
 
 	if (instantLearning == true) {
@@ -1502,16 +1458,7 @@ void CbrInterface::RestartCbrActivities(char* p1charName, char* p2charName, int 
 				saveDebug();
 			}
 		}
-		boost::filesystem::path dir("CBRsave");
-		if (!(boost::filesystem::exists(dir))) {
-			boost::filesystem::create_directory(dir);
-		}
-		auto filename = ".\\CBRsave\\cbrDebug.txt";
-		std::ofstream outfile(filename);
-		for (std::size_t i = 0; i < data->debugTextArr.size(); ++i) {
-			outfile << data->debugTextArr[i];
-		}
-		data->debugTextArr.clear();
+		cbrDebugSave(*data);
 		StartCbrInstantLearning(p1charName, p2charName, p1charId, p2charId,0);
 	}
 
@@ -1531,16 +1478,7 @@ void CbrInterface::RestartCbrActivities(char* p1charName, char* p2charName, int 
 				saveDebug();
 			}
 		}
-		boost::filesystem::path dir("CBRsave");
-		if (!(boost::filesystem::exists(dir))) {
-			boost::filesystem::create_directory(dir);
-		}
-		auto filename = ".\\CBRsave\\cbrDebug.txt";
-		std::ofstream outfile(filename);
-		for (std::size_t i = 0; i < data->debugTextArr.size(); ++i) {
-			outfile << data->debugTextArr[i];
-		}
-		data->debugTextArr.clear();
+		cbrDebugSave(*data);
 		StartCbrInstantLearning(p2charName, p1charName, p2charId, p1charId, 1);
 	}
 }

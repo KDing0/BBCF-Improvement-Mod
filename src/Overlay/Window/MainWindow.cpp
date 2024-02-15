@@ -316,7 +316,7 @@ void MainWindow::DrawGameplaySettingSection() const
 
 void MainWindow::DrawLinkButtons() const
 {
-	if (ImGui::Button("Cbr Filehost"))
+	if (ImGui::Button("AI Filehost"))
 	{
 		m_pWindowContainer->GetWindow(WindowType_CbrServer)->ToggleOpen();
 	}ImGui::SameLine();
@@ -465,6 +465,13 @@ void MainWindow::DrawCBRAiSection() const
 		ImGui::TextDisabled("SAVING OR LOADING CBR DATA. \nPLEASE WAIT.");
 		return;
 	}
+	ImGui::Text("CBR AI Explenation:");
+	ImGui::SameLine(); // Move to the same line as the button
+	ImGui::SmallButton("?");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("CBR AI learns by recording player behaviour and imitating them, essentially letting you generate player clones.\nThis means the AI will only know how to do things that a player demonstrated beforehand.\nThis lets you create smarter AI opponents to play with, or even training dummys with behaviour finetuned for training.\nAn example of this would be a carl AI that only runs blockstrings, which lets you practice blocking carl.\n\nTo create an AI you must record yourself and/or your opponent by playing online, or use the CBR menu in training mode.\nIn training mode set the opponents behaviour to \"Controller\" to let the AI control them.\n\nYou can use instant learning in mirror matches to play against an AI while it learns.\nI recommend setting life to not regenerate to play normal rounds against the AI.\nThis gives the AI more chances to learn neutral, since it will be bad at everything while it has little data.\n\nYou can also download AI data from my server by pressing the AI Filehost button after you logged into the Blazblue network.");
+	}
 	if (!isInMatch() || !(*g_gameVals.pGameMode == GameMode_Training || *g_gameVals.pGameMode == GameMode_Versus || 
 		*g_gameVals.pGameMode == GameMode_Online) )
 	{
@@ -511,6 +518,7 @@ void MainWindow::DrawCBRAiSection() const
 		ImGui::Text("FramesRecorded: %d",g_interfaces.cbrInterface.getAnnotatedReplay(1)->getInputSize());
 		ImGui::Text("Input: %d", g_interfaces.cbrInterface.input);
 		ImVec2 buttonSize = { 120,20 };
+		ImVec2 buttonSizeHalf = { 60,20 };
 
 		if (ImGui::Button("Record", buttonSize))
 		{
@@ -560,7 +568,7 @@ void MainWindow::DrawCBRAiSection() const
 			}
 
 		}
-		if (ImGui::Button("Delete", buttonSize))
+		if (ImGui::Button("Delete", buttonSizeHalf))
 		{
 			g_interfaces.cbrInterface.EndCbrActivities();
 			g_interfaces.cbrInterface.getCbrData(0)->deleteReplays(g_interfaces.cbrInterface.deletionStart, g_interfaces.cbrInterface.deletionEnd);
@@ -568,6 +576,15 @@ void MainWindow::DrawCBRAiSection() const
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("Deletes AI data in a certain range from the AI file in slot 1.\nThe range to be deleted can be set in the \"Replay Deletion Range\" entry below.");
+		}ImGui::SameLine(0,0);
+		if (ImGui::Button("Last", buttonSizeHalf))
+		{
+			g_interfaces.cbrInterface.EndCbrActivities();
+			g_interfaces.cbrInterface.getCbrData(0)->deleteLastReplay();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Deletes the last AI replay that was added.");
 		}
 
 		if (ImGui::Button("Save", buttonSize))
@@ -655,10 +672,24 @@ void MainWindow::DrawCBRAiSection() const
 				ImGui::SetTooltip("The AI takes control over player 1 while learning in real time from player 2.\nOnly use if you are player 2.\nStores data in slot 1.\nClick to turn on and again to turn off.");
 			}
 		}
-		if (ImGui::Button("Delete", buttonSize))
+		if (ImGui::Button("Delete", buttonSizeHalf))
 		{
 			g_interfaces.cbrInterface.EndCbrActivities();
 			g_interfaces.cbrInterface.getCbrData(1)->deleteReplays(g_interfaces.cbrInterface.deletionStart, g_interfaces.cbrInterface.deletionEnd);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Deletes AI data in a certain range from the AI file in slot 2.\n The range to be deleted can be set in the \"Replay Deletion Range\" entry below.");
+		}
+		ImGui::SameLine(0, 0);
+		if (ImGui::Button("Last", buttonSizeHalf))
+		{
+			g_interfaces.cbrInterface.EndCbrActivities();
+			g_interfaces.cbrInterface.getCbrData(1)->deleteLastReplay();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Deletes the last AI replay that was added.");
 		}
 		if (ImGui::Button("Save", buttonSize))
 		{
@@ -706,8 +737,8 @@ void MainWindow::DrawCBRAiSection() const
 			}
 			ImGui::Separator();
 		}
-		ImGui::Text(g_interfaces.cbrInterface.WriteAiInterfaceState().c_str());
-		ImGui::Text("Input Savefile name here:");
+
+		ImGui::Text("Player name:");
 		ImGui::PushID(177);
 		ImGui::InputText("", g_interfaces.cbrInterface.playerName, IM_ARRAYSIZE(g_interfaces.cbrInterface.playerName));
 		ImGui::PopID();
@@ -715,76 +746,8 @@ void MainWindow::DrawCBRAiSection() const
 		ImGui::PushItemWidth(80);
 		ImGui::DragIntRange2("", &g_interfaces.cbrInterface.deletionStart, &g_interfaces.cbrInterface.deletionEnd, 1.0F, 0);
 		ImGui::PushItemWidth(0);
-		if (!g_interfaces.player1.IsCharDataNullPtr()) {
-			ImGui::TextUnformatted(g_interfaces.player1.GetData()->char_abbr);
-			//ImGui::Text("hitstop %d", g_interfaces.player1.GetData()->hitstop);
-			ImGui::Text("CharNr %d", g_interfaces.player1.GetData()->charIndex);
-		}
-		
-		ImGui::Text("CaseInstance: %d - %d", g_interfaces.cbrInterface.getCbrData(0)->debugCounter, g_interfaces.cbrInterface.getCbrData(1)->debugCounter);
-		//ImGui::Text(g_interfaces.player1.getCbrData()->debugText.c_str());
-		
+		ImGui::Text(g_interfaces.cbrInterface.WriteAiInterfaceState().c_str());
 
-		if (!g_interfaces.player1.IsCharDataNullPtr()) {
-			/*
-			ImGui::TextUnformatted(g_interfaces.player1.GetData()->currentAction);
-			ImGui::TextUnformatted(g_interfaces.player1.GetData()->lastAction);
-			
-			ImGui::Text("P1ComboProration %d", g_interfaces.player1.GetData()->comboProration);
-			ImGui::Text("P1StarterRating %d", g_interfaces.player1.GetData()->starterRating);
-			ImGui::Text("P1ComboTime %d", g_interfaces.player1.GetData()->comboTime);
-			ImGui::Text("P1FrameCount-1 %d", g_interfaces.player1.GetData()->frame_count_minus_1);
-			ImGui::Text("P1 Facing %d", g_interfaces.player1.GetData()->facingLeft);
-			ImGui::Text("hitstop %d", g_interfaces.player1.GetData()->hitstop);
-			ImGui::Text("actionTime %d", g_interfaces.player1.GetData()->actionTime);
-			ImGui::Text("actionTime2 %d", g_interfaces.player1.GetData()->actionTime2);
-			ImGui::Text("actionTimeNoHitstop %d", g_interfaces.player1.GetData()->actionTimeNoHitstop);
-			ImGui::Text("typeOfAttack %d", g_interfaces.player1.GetData()->typeOfAttack);
-			ImGui::Text("attackLevel %d", g_interfaces.player1.GetData()->attackLevel);
-			ImGui::Text("moveDamage %d", g_interfaces.player1.GetData()->moveDamage);
-			ImGui::Text("moveSpecialBlockstun %d", g_interfaces.player1.GetData()->moveSpecialBlockstun);
-			ImGui::Text("moveGuardCrushTime %d", g_interfaces.player1.GetData()->moveGuardCrushTime);
-			ImGui::Text("moveHitstunOverwrite %d", g_interfaces.player1.GetData()->moveHitstunOverwrite);
-			ImGui::Text("blockstun %d", g_interfaces.player1.GetData()->blockstun);
-			ImGui::Text("hitstun %d", g_interfaces.player1.GetData()->hitstun); 
-			ImGui::Text("timeAfterTechIsPerformed %d", g_interfaces.player1.GetData()->timeAfterTechIsPerformed);
-			ImGui::Text("timeAfterLatestHit %d", g_interfaces.player1.GetData()->timeAfterLatestHit);
-			ImGui::Text("comboDamage %d", g_interfaces.player1.GetData()->comboDamage);
-			ImGui::Text("comboDamage2 %d", g_interfaces.player1.GetData()->comboDamage2);
-			ImGui::Text("P1PosX %d", g_interfaces.player1.GetData()->position_x);
-			ImGui::Text("P1PosY %d", g_interfaces.player1.GetData()->position_y);
-			ImGui::Text("P1PosX2 %d", g_interfaces.player1.GetData()->position_x_dupe);
-			ImGui::Text("P1PosY2 %d", g_interfaces.player1.GetData()->position_y_dupe);
-
-			ImGui::TextUnformatted(g_interfaces.player2.GetData()->char_abbr);
-			
-			ImGui::TextUnformatted(g_interfaces.player2.GetData()->currentAction);
-			ImGui::TextUnformatted(g_interfaces.player2.GetData()->lastAction);
-			ImGui::Text("P2ComboProration %d", g_interfaces.player2.GetData()->comboProration);
-			ImGui::Text("P2StarterRating %d", g_interfaces.player2.GetData()->starterRating);
-			ImGui::Text("P2ComboTime %d", g_interfaces.player2.GetData()->comboTime);
-			ImGui::Text("P2FrameCount-1 %d", g_interfaces.player2.GetData()->frame_count_minus_1);
-			ImGui::Text("P2 Facing %d", g_interfaces.player2.GetData()->facingLeft);
-			ImGui::Text("hitstop %d", g_interfaces.player2.GetData()->hitstop);
-			ImGui::Text("actionTime %d", g_interfaces.player2.GetData()->actionTime);
-			ImGui::Text("actionTime2 %d", g_interfaces.player2.GetData()->actionTime2);
-			ImGui::Text("actionTimeNoHitstop %d", g_interfaces.player2.GetData()->actionTimeNoHitstop);
-			ImGui::Text("typeOfAttack %d", g_interfaces.player2.GetData()->typeOfAttack);
-			ImGui::Text("attackLevel %d", g_interfaces.player2.GetData()->attackLevel);
-			ImGui::Text("moveDamage %d", g_interfaces.player2.GetData()->moveDamage);
-			ImGui::Text("moveSpecialBlockstun %d", g_interfaces.player2.GetData()->moveSpecialBlockstun);
-			ImGui::Text("moveGuardCrushTime %d", g_interfaces.player2.GetData()->moveGuardCrushTime);
-			ImGui::Text("moveHitstunOverwrite %d", g_interfaces.player2.GetData()->moveHitstunOverwrite);
-			ImGui::Text("blockstun %d", g_interfaces.player2.GetData()->blockstun);
-			ImGui::Text("hitstun %d", g_interfaces.player2.GetData()->hitstun);
-			ImGui::Text("timeAfterTechIsPerformed %d", g_interfaces.player2.GetData()->timeAfterTechIsPerformed);
-			ImGui::Text("timeAfterLatestHit %d", g_interfaces.player2.GetData()->timeAfterLatestHit);
-			ImGui::Text("comboDamage %d", g_interfaces.player2.GetData()->comboDamage);
-			ImGui::Text("comboDamage2 %d", g_interfaces.player2.GetData()->comboDamage2);
-			ImGui::Text("P2PosX %d", g_interfaces.player2.GetData()->position_x);
-			ImGui::Text("P2PosY %d", g_interfaces.player2.GetData()->position_y);
-			*/
-		}
 
 		ImGui::RadioButton("Basic: ", &selected_radio, 0);
 		ImGui::SameLine();

@@ -215,6 +215,12 @@ void Metadata::computeMetaData() {
 	neutral[1] = !blocking[1] && !hit[1] && CheckNeutralState(currentAction[1]);
 	hitThisFrame[0] = (hitstun[0] > 0) && (hitstop[0] > 0) && (actionTimeNoHitstop[0] == 1);
 	hitThisFrame[1] = (hitstun[1] > 0) && (hitstop[1] > 0) && (actionTimeNoHitstop[1] == 1);
+	if (hitThisFrame[1] == true) {
+		hitThisFrame[1] = true;
+	}
+	if (hitThisFrame[0] == true) {
+		hitThisFrame[0] = true;
+	}
 	BlockThisFrame[0] = (blockstun[0] > 0) && (hitstop[0] > 0) && (actionTimeNoHitstop[0] == 1);
 	BlockThisFrame[1] = (blockstun[1] > 0) && (hitstop[1] > 0) && (actionTimeNoHitstop[1] == 1);
 	air[0] = posY[0] > 0;

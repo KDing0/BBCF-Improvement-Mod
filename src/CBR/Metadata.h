@@ -11,6 +11,7 @@ class Metadata {
 private:
     friend class boost::serialization::access;
 public:
+    int opponentId = 0;
 
     std::array< int, 2>posX;
     std::array< int, 2>posY;
