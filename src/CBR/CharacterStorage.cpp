@@ -791,6 +791,8 @@ json threadDownloadCharData(bool run, std::string public_id) {
         serverThreadActivityActive = true;
         characterStorageDownloadThread = boost::thread(&cbrHTTP_GetCharData, public_id, std::ref(pDownload));
         localDataUpdating = true;
+        serverThreadActive = true;
+        
     }
     if (fDownload.is_ready() && serverThreadActivityActive == true && characterStorageDownloadThread.joinable()) {
 
@@ -801,7 +803,7 @@ json threadDownloadCharData(bool run, std::string public_id) {
         fDownload = pDownload.get_future();
         localDataUpdating = false;
         updateLocalWindowVar = true;
-
+        serverThreadActive = false;
         return retVal;
     }
     return NULL;

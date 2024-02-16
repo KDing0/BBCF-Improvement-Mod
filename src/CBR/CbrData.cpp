@@ -10,6 +10,7 @@
 #include "CbrUtils.h"
 #include "CbrSearchTree.h"
 
+#define DebugPrint false
 
 
 #define specialButton 512
@@ -71,8 +72,13 @@ bestCaseSelector& CbrData::FindBestCaseInTree(Metadata* curCase) {
     return caseSelector;
 }
 
+void CbrData::deleteLastReplay() {
+
+    deleteReplays(getReplayCount() - 1, getReplayCount() - 1);
+}
+
 void CbrData::deleteReplays(int start, int end) {
-    if (end <= 0) { return; }
+    if (end < 0) { return; }
     if (start >= replayFiles.size()) { return; }
     if (end >= replayFiles.size()) { end = replayFiles.size() - 1; }
     for (int i = end; i >= start; i--) {
@@ -288,8 +294,7 @@ bool CbrData::switchCaseCheck(Metadata* curGamestate, CbrReplayFile& replay) {
     //Self Block
     auto b3 = !b0 && curGamestate->getBlockThisFrame()[0];
     //Hitting the opponent while not buffering an input
-    auto b4 = !b0 && (curGamestate->getHitThisFrame()[1] || curGamestate->getBlockThisFrame()[1]) && !replay.getCase(activeCase)->getMetadata()->getInputBufferActive();
-
+    auto b4 = !b0 && (curGamestate->getHitThisFrame()[1] || curGamestate->getBlockThisFrame()[1] ) && !replay.getCase(activeCase)->getMetadata()->getInputBufferActive(); //
     caseSwitchReason = "Switch Reason: ";
     if (b0) { caseSwitchReason += "No current case - "; }
     if (b1) { caseSwitchReason += "Case Ending - "; }
@@ -600,6 +605,7 @@ int CbrData::inverseInput(int input) {
 
 
 void CbrData::debugPrint(Metadata* curM, int nextCI, int bestCI, int nextRI, int bestRI, std::vector<debugCaseIndex>& dci, int FinalBestRI, int FinalBestCI, CbrReplayFile& nextReplayFile, CbrReplayFile& bestReplayFile, bool nextInstantLearnSameReplay, bool bestInstantLearnSameReplay) {
+    if (!DebugPrint) { return; }
     debugCounter++;
     std::string str = "\n--------------------------------\n";
 

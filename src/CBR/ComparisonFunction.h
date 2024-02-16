@@ -653,6 +653,8 @@ struct costWeights {
 #define costVelocity 188
 #define costVelocityEnemy 189
 
+#define costSameOpponent 189
+
 inline void initalizeCosts(costWeights& costs) {
 
     costs.name[costXDist] = "costXDist";
@@ -1737,6 +1739,12 @@ inline void initalizeCosts(costWeights& costs) {
     costs.pressure[costVelocityEnemy] = 0.5;
     costs.blocking[costVelocityEnemy] = 0.5;
 
+    costs.name[costSameOpponent] = "costSameOpponent";
+    costs.basic[costSameOpponent] = 0.2;
+    costs.combo[costSameOpponent] = 0.0;
+    costs.pressure[costSameOpponent] = 0.2;
+    costs.blocking[costSameOpponent] = 0.1;
+
 
     auto result = getCombinedAndLowestWeights(costs.basic);
     costs.lowestCost = result.low;
@@ -1996,8 +2004,12 @@ inline float comparisonFunctionQuick(Metadata* curGamestate, Metadata* caseGames
     
 }
 
-inline float comparisonFunction(Metadata* curGamestate, Metadata* caseGamestate, CbrReplayFile& caseReplay, CbrCase* caseData, int replayIndex, int caseIndex, bool nextCaseCheck, std::array<float, 200>& curCosts, int framesActive, int activeReplay, int activeCase ) {
+inline float comparisonFunction(Metadata* curGamestate, Metadata* caseGamestate, CbrReplayFile& caseReplay, CbrCase* caseData, int replayIndex, int caseIndex, bool nextCaseCheck, std::array<float, 200>& curCosts, int framesActive, int activeReplay, int activeCase) {
     float compValue = 0;
+
+    
+    compValue += PURE_INVOKE(compIntState, curCosts[costSameOpponent], curGamestate->opponentId, caseReplay.getCharIds()[1]);
+    
 
     //Velocity
     if (curGamestate->getFacing() == caseGamestate->getFacing()) {
@@ -2509,7 +2521,7 @@ inline float comparisonFunctionDebug(Metadata * curGamestate, Metadata * caseGam
         return compValue;
     }
 
-
+    compValue += REFLECT_INVOKE(compIntState, curCosts[costSameOpponent], curGamestate->opponentId, caseReplay.getCharIds()[1]);
     //Velocity
     if (curGamestate->getFacing() == caseGamestate->getFacing()) {
         compValue += REFLECT_INVOKE(compInt, curCosts[costVelocity], curGamestate->velocity[0][0], caseGamestate->velocity[0][0], maxXVelocity);
@@ -2539,7 +2551,7 @@ inline float comparisonFunctionDebug(Metadata * curGamestate, Metadata * caseGam
     //testvalue += REFLECT_INVOKE(compMaxDistanceAttack, curCosts[costMinDistanceAttack], curGamestate->getPosY()[0], curGamestate->getPosY()[1], caseGamestate->getPosY()[0], caseGamestate->getPosY()[1], caseGamestate->hitMinY);
 
     float testvalue = 0;
-    testvalue += REFLECT_INVOKE(compStateHash, curCosts[costAiState], curGamestate->getCurrentActionHash()[0], caseGamestate->getCurrentActionHash()[0]);
+    testvalue += REFLECT_INVOKE(compState, curCosts[costAiState], curGamestate->getCurrentAction()[0], caseGamestate->getCurrentAction()[0]);
     //compValue += compStateHash(curGamestate->getCurrentActionHash()[0], caseGamestate->getCurrentActionHash()[0]) * costAiState;
     if (testvalue != 0 && !curGamestate->getNeutral()[0]) {
         testvalue += curCosts[costNonNeutralState];
@@ -3132,7 +3144,7 @@ inline float comparisonFunctionSlow(Metadata* curGamestate, Metadata* caseGamest
     compValue += HelperCompMatch(curGamestate, caseGamestate, curCosts);
     return compValue;
 }
-inline float comparisonFunctionSlowDebug(Metadata* curGamestate, Metadata* caseGamestate, CbrReplayFile& caseReplay, CbrCase* caseData, int replayIndex, int caseIndex, bool nextCaseCheck, std::array<float, 200> curCosts, std::string debugText) {
+inline float comparisonFunctionSlowDebug(Metadata* curGamestate, Metadata* caseGamestate, CbrReplayFile& caseReplay, CbrCase* caseData, int replayIndex, int caseIndex, bool nextCaseCheck, std::array<float, 200> curCosts, std::string& debugText) {
     float compValue = 0;
     compValue += REFLECT_INVOKE(compDirectionHeld, curCosts[costButtonsHeld], curGamestate->inputFwd, curGamestate->inputBack, curGamestate->inputUp, curGamestate->inputDown, caseGamestate->inputFwd, caseGamestate->inputBack, caseGamestate->inputUp, caseGamestate->inputDown);
     compValue += REFLECT_INVOKE(compButtonsHeld, curCosts[costButtonsHeld], curGamestate->inputA, curGamestate->inputB, curGamestate->inputC, curGamestate->inputD, caseGamestate->inputA, caseGamestate->inputB, caseGamestate->inputC, caseGamestate->inputD);

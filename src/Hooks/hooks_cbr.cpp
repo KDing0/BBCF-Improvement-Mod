@@ -328,6 +328,9 @@ int CBRLogic(int input, int playerNr, int controllerNr, bool readOnly, bool writ
 			}
 
 		}
+		else {
+			InactiveMetaDataUpdate(0, oldInput[playerNr]);
+		}
 
 	}
 	if (playerNr == 1) {
@@ -360,6 +363,9 @@ int CBRLogic(int input, int playerNr, int controllerNr, bool readOnly, bool writ
 				}
 			}
 
+		}
+		else {
+			InactiveMetaDataUpdate(1, oldInput[playerNr]);
 		}
 	}
 	if (writeOnly || readOnly) {
@@ -471,10 +477,30 @@ int netaLogic(int input, std::shared_ptr<Metadata> meta, int playerNR, bool read
 #define CButton 64
 #define BButton 32
 #define AButton 16
+
+std::array<int, 2> oldPosX;
+std::array<int, 2> oldPosY;
+
+void InactiveMetaDataUpdate(bool PlayerIndex, int input) {
+	CharData* focusCharData;
+	CharData* enemyCharData;
+	if (PlayerIndex == 0) {
+		focusCharData = g_interfaces.player1.GetData();
+		enemyCharData = g_interfaces.player2.GetData();
+	}
+	else {
+		focusCharData = g_interfaces.player2.GetData();
+		enemyCharData = g_interfaces.player1.GetData();
+	}
+	//Velocity
+	oldPosX[0] = focusCharData->position_x;
+	oldPosX[1] = enemyCharData->position_x;
+	oldPosY[0] = focusCharData->position_y_dupe;
+	oldPosY[1] = enemyCharData->position_y_dupe;
+}
+
 std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	//static std::array<FixedQueue<int, 5>, 2> inputBuffer;
-
-
 
 	CharData* focusCharData;
 	CharData* enemyCharData;
@@ -528,6 +554,7 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	meta->overdriveTimeleft[1] = enemyCharData->overdriveTimeleft;
 	meta->healthMeter[0] = focusCharData->currentHP;
 	meta->healthMeter[1] = enemyCharData->currentHP;
+	meta->opponentId = enemyCharData->charIndex;
 
 	meta->hitMinX = 0;
 	meta->hitMinY = 0;
@@ -537,11 +564,12 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->hitMinX = minDist.x;
 		meta->hitMinY = minDist.y;
 	}
-
-
-
 	//Preprocessing inputs
-	auto buffer = input;
+	
+	static int oldBuffer = 5;
+	auto buffer = oldBuffer;
+	oldBuffer = input;
+
 	auto test = buffer - specialButton;
 	if (test > 0) {
 		buffer = test;
@@ -615,8 +643,10 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	}
 
 	//Velocity
-	static std::array<int, 2> oldPosX{ focusCharData->position_x , enemyCharData->position_x };
-	static std::array<int, 2> oldPosY{ focusCharData->position_y_dupe, enemyCharData->position_y_dupe };
+	oldPosX[0] = focusCharData->position_x;
+	oldPosX[1] = enemyCharData->position_x;
+	oldPosY[0] = focusCharData->position_y_dupe; 
+	oldPosY[1] = enemyCharData->position_y_dupe;
 	meta->velocity[0][0] = focusCharData->position_x - oldPosX[0];
 	meta->velocity[0][1] = focusCharData->position_y_dupe - oldPosY[0];
 	meta->velocity[1][0] = enemyCharData->position_x - oldPosX[1];

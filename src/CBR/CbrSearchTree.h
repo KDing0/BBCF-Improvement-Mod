@@ -66,9 +66,13 @@ public:
     
     template<class Archive>
     void serialize(Archive& a, const unsigned version) {
-        a& tree & treeCompValues;
+        switch (version) {
+        case 0: a & tree & treeCompValues; break;
+        case 1: a & tree & treeCompValues & deletedCases; break;
+
+        }
     }
-    CbrSearchTree() {};
+    CbrSearchTree() { deletedCases = { {} }; };
     float insertionCompFunc(Metadata* curGamestate, Metadata* caseGamestate, CbrReplayFile& caseReplay, CbrCase* caseData, int replayIndex, int caseIndex, bool nextCaseCheck, costWeights& costs, std::array<float, 200>& curCosts, std::vector<CbrReplayFile>& replayFiles) {
 
         setCurGamestateCosts(curGamestate, costs, curCosts);
@@ -127,20 +131,20 @@ public:
         cAdvance = treeRadius[y];
         if (y - 1 >= 0) { cRadius = treeRadius[y - 1]; }
 
-        auto& replayFiles = replayFilesIn;
+        std::vector<CbrReplayFile>* replayFiles = &replayFilesIn;
         int replayIndex = 0;
         if (tree[y][x].cbrReplayIndex == -1) {
-            replayFiles = deletedCases;
+            replayFiles = &deletedCases;
         }
         else {
-            replayFiles = replayFilesIn;
+            replayFiles = &replayFilesIn;
             replayIndex = tree[y][x].cbrReplayIndex;
         }
         int caseIndex = tree[y][x].cbrIndex;
         
-        auto caseGamestate = replayFiles[replayIndex].getCase(caseIndex)->getMetadata();
-        auto& caseReplay = replayFiles[replayIndex];
-        auto caseData = replayFiles[replayIndex].getCase(caseIndex);
+        auto caseGamestate = replayFiles->at(replayIndex).getCase(caseIndex)->getMetadata();
+        auto& caseReplay = replayFiles->at(replayIndex);
+        auto caseData = replayFiles->at(replayIndex).getCase(caseIndex);
         float dissimilarity = comparisonFunction(curGamestate, caseGamestate, caseReplay, caseData, replayIndex, caseIndex, false, curCosts, rsd.framesActive, rsd.activeReplay, rsd.activeCase);
         dissimilarity += comparisonFunctionSlow(curGamestate, caseGamestate, caseReplay, caseData, replayIndex, caseIndex, false, curCosts);
         //exploredCandidates.push_back({ y,x,dissimilarity });
@@ -148,7 +152,7 @@ public:
         //Extra checks which disqualify a case from beeing picked, not used for the algorithm but used to not choose a case as best.
         float dissExtra = comparisonFunctionQuick(curGamestate, caseGamestate, caseReplay, caseData, replayIndex, caseIndex, false, curCosts, rsd.framesActive, rsd.activeReplay, rsd.activeCase, rsd.instantLearnSameReplay);
 
-        if ((caseIndex != 0 || y != tree.size() - 1) && bestCandidate.similarity + maxRandomDiff >= dissimilarity + dissExtra) {
+        if (((replayIndex != 0 || caseIndex != 0) || y == tree.size() - 1) && bestCandidate.similarity + maxRandomDiff >= dissimilarity + dissExtra) {
             bestCaseCultivator(dissimilarity + dissExtra, replayIndex, caseIndex, caseSelector, false);
             if (bestCandidate.similarity > dissimilarity + dissExtra) {
                 bestCandidate.treePos.y = y;
@@ -163,7 +167,7 @@ public:
                 treeNode* tNode = &tree[y][x];
                 int iSize = tNode->childNodes.size();
                 for (int i = 0; i < iSize; i++) {
-                    searchSimilarNode(comparisonNr, curGamestate, replayFiles, tNode->childNodes[i].y, tNode->childNodes[i].x, bestCandidate, unexploredCandidates, treeRadius, costs, curCosts, caseSelector, rsd);
+                    searchSimilarNode(comparisonNr, curGamestate, replayFilesIn, tNode->childNodes[i].y, tNode->childNodes[i].x, bestCandidate, unexploredCandidates, treeRadius, costs, curCosts, caseSelector, rsd);
                 }
             }
 
@@ -187,34 +191,35 @@ public:
         cAdvance = treeRadius[y];
         if (y - 1 >= 0) { cRadius = treeRadius[y - 1]; }
 
-        auto& replayFiles = replayFilesIn;
+        auto* replayFiles = &replayFilesIn;
         int replayIndex = 0;
         if (tree[y][x].cbrReplayIndex == -1) {
-            replayFiles = deletedCases;
+            replayFiles = &deletedCases;
+            replayIndex = 0;
         }
         else {
-            replayFiles = replayFilesIn;
+            replayFiles = &replayFilesIn;
             replayIndex = tree[y][x].cbrReplayIndex;
         }
         //cAdvance = cAdvance / 2;
         int caseIndex = tree[y][x].cbrIndex;
-        auto caseGamestate = replayFiles[replayIndex].getCase(caseIndex)->getMetadata();
-        auto& caseReplay = replayFiles[replayIndex];
-        auto caseData = replayFiles[replayIndex].getCase(caseIndex);
+        auto caseGamestate = replayFiles->at(replayIndex).getCase(caseIndex)->getMetadata();
+        auto& caseReplay = replayFiles->at(replayIndex);
+        auto caseData = replayFiles->at(replayIndex).getCase(caseIndex);
         float dissimilarity = comparisonFunction(curGamestate, caseGamestate, caseReplay, caseData, replayIndex, caseIndex, false, curCosts, rsd.framesActive, rsd.activeReplay, rsd.activeCase);
         dissimilarity += comparisonFunctionSlow(curGamestate, caseGamestate, caseReplay, caseData, replayIndex, caseIndex, false, curCosts);
 
         //Extra checks which disqualify a case from beeing picked, not used for the algorithm but used to not choose a case as best.
         float dissExtra = comparisonFunctionQuick(curGamestate, caseGamestate, caseReplay, caseData, replayIndex, caseIndex, false, curCosts, rsd.framesActive, rsd.activeReplay, rsd.activeCase, rsd.instantLearnSameReplay);
 
-        if (caseIndex != 0 && bestCandidate.similarity > dissimilarity + dissExtra) {
+        if (((replayIndex != 0 || caseIndex != 0) || y == tree.size() - 1) && bestCandidate.similarity > dissimilarity + dissExtra) {
             bestCandidate.treePos.y = y;
             bestCandidate.treePos.x = x;
             bestCandidate.similarity = dissimilarity + dissExtra;
             bestCaseCultivator(bestCandidate.similarity, replayIndex, caseIndex, caseSelector, false);
         }
         else {
-            if (caseIndex != 0  && bestCandidate.similarity + maxRandomDiff > dissimilarity + dissExtra) {
+            if ((replayIndex != 0 || caseIndex != 0) && bestCandidate.similarity + maxRandomDiff > dissimilarity + dissExtra) {
                 bestCaseCultivator(dissimilarity + dissExtra, replayIndex, caseIndex, caseSelector, false);
             }
         }
@@ -227,7 +232,7 @@ public:
 
             for (int i = 0; i < tree[y][x].childNodes.size(); i++) {
                 if (comparisonNr > maxComparisonNr) { return; }
-                searchSimilarRemainingNode(comparisonNr, curGamestate, replayFiles, tree, tree[y][x].childNodes[i].y, tree[y][x].childNodes[i].x, bestCandidate, unexploredCandidates, treeRadius, costs, curCosts, caseSelector, rsd);
+                searchSimilarRemainingNode(comparisonNr, curGamestate, replayFilesIn, tree, tree[y][x].childNodes[i].y, tree[y][x].childNodes[i].x, bestCandidate, unexploredCandidates, treeRadius, costs, curCosts, caseSelector, rsd);
             }
         }
     }
@@ -496,3 +501,4 @@ public:
     }
 
 };
+BOOST_CLASS_VERSION(CbrSearchTree, 1)

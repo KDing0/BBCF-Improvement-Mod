@@ -68,6 +68,9 @@ public:
     void AddReplay(CbrReplayFile&);
     bestCaseSelector& CbrData::FindBestCaseInTree(Metadata* curCase);
     void deleteReplays(int start, int end);
+
+    void CbrData::deleteLastReplay();
+
     std::vector<CbrReplayFile>* getReplayFiles();
     CbrReplayFile* getLastReplay();
     int CBRcomputeNextAction(Metadata*);
