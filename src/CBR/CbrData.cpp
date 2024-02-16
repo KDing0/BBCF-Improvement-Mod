@@ -12,6 +12,7 @@
 
 #define DebugPrint false
 
+
 #define specialButton 512
 #define tauntButton 256
 #define DButton 128
@@ -72,7 +73,6 @@ bestCaseSelector& CbrData::FindBestCaseInTree(Metadata* curCase) {
 }
 
 void CbrData::deleteLastReplay() {
-    
     deleteReplays(getReplayCount() - 1, getReplayCount() - 1);
 }
 

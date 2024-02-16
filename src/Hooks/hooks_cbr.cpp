@@ -477,6 +477,7 @@ int netaLogic(int input, std::shared_ptr<Metadata> meta, int playerNR, bool read
 #define CButton 64
 #define BButton 32
 #define AButton 16
+
 std::array<int, 2> oldPosX;
 std::array<int, 2> oldPosY;
 
@@ -500,8 +501,6 @@ void InactiveMetaDataUpdate(bool PlayerIndex, int input) {
 
 std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	//static std::array<FixedQueue<int, 5>, 2> inputBuffer;
-	
-
 
 	CharData* focusCharData;
 	CharData* enemyCharData;

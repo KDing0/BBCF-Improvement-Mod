@@ -3,7 +3,6 @@
 #include "CBR/CbrUtils.h"
 
 
-
 bool placeHooks_cbr();
 
 void InactiveMetaDataUpdate(bool PlayerIndex, int input);
