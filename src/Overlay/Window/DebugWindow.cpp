@@ -409,9 +409,6 @@ void DebugWindow::DrawGameValuesSection()
 		if (!g_interfaces.player2.IsCharDataNullPtr())
 			ImGui::Text("pP2CurrentScriptActionLocationInMemory 0x%p", g_interfaces.player2.GetData()->nextScriptLineLocationInMemory);
 
-		if (!g_interfaces.player2.IsCharDataNullPtr())
-			ImGui::Text("pDrive12 0x%x", g_interfaces.player2.GetData()->Drive12);
-
 		if (!g_interfaces.player1.IsCharDataNullPtr())
 			ImGui::Text("P1CharIndex %d", g_interfaces.player1.GetData()->charIndex);
 

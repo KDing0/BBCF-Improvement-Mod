@@ -1024,8 +1024,10 @@ void MainWindow::DrawCBRAiSection() const
 			}
 		}
 	}
-
+	/*
 	if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
+
+		ImGui::Text("isDoingDistortion %d", g_interfaces.player1.GetData()->isDoingDistortion);
 		ImGui::Text("position_x %d", g_interfaces.player1.GetData()->position_x);
 		ImGui::Text("position_y_dupe %d", g_interfaces.player1.GetData()->position_y_dupe);
 		ImGui::Text("facingLeft %d", g_interfaces.player1.GetData()->facingLeft);
@@ -1055,17 +1057,17 @@ void MainWindow::DrawCBRAiSection() const
 		ImGui::Text("LitchiStaffState %d", g_interfaces.player1.GetData()->LitchiStaffState);
 		ImGui::Text("Drive11 %d", g_interfaces.player1.GetData()->Drive11);
 		ImGui::Text("Drive2 %d", g_interfaces.player1.GetData()->Drive2);
-		ImGui::Text("Drive10 %d", g_interfaces.player1.GetData()->Drive10);
+		ImGui::Text("SLOT_59 %d", g_interfaces.player1.GetData()->SLOT_59);
 		ImGui::Text("CelicaRegen %d", g_interfaces.player1.GetData()->CelicaRegen);
-		ImGui::Text("EsBuff %d", g_interfaces.player1.GetData()->EsBuff);
+		ImGui::Text("SLOT_31 %d", g_interfaces.player1.GetData()->SLOT_31);
 		ImGui::Text("Drive1_type %d", g_interfaces.player1.GetData()->Drive1_type);
 
-		ImGui::Text("Drive12 %d", g_interfaces.player1.GetData()->Drive12);
+		ImGui::Text("Drive12 %d", g_interfaces.player1.GetData()->slot2_or_slot4);
 		ImGui::Text("Drive3 %d", g_interfaces.player1.GetData()->Drive3);
-		ImGui::Text("Drive20 %d", g_interfaces.player1.GetData()->Drive20);
-		ImGui::Text("Drive30 %d", g_interfaces.player1.GetData()->Drive30);
-		ImGui::Text("lambda_nu_drive_hitcount %d", g_interfaces.player1.GetData()->lambda_nu_drive_hitcount);
-	}
+		ImGui::Text("SLOT_60 %d", g_interfaces.player1.GetData()->SLOT_60);
+		ImGui::Text("SLOT_61 %d", g_interfaces.player1.GetData()->SLOT_61);
+		ImGui::Text("SLOT_62 %d", g_interfaces.player1.GetData()->SLOT_62);
+	}*/
 }
 
 void MainWindow::DrawReversalSection() const
@@ -1192,49 +1194,7 @@ void MainWindow::DrawReversalSection() const
 	}
 	ImGui::PopID();
 
-	if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
-		
-		ImGui::Text("isDoingDistortion %d", g_interfaces.player1.GetData()->isDoingDistortion);
-		ImGui::Text("position_x %d", g_interfaces.player1.GetData()->position_x);
-		ImGui::Text("position_y_dupe %d", g_interfaces.player1.GetData()->position_y_dupe);
-		ImGui::Text("facingLeft %d", g_interfaces.player1.GetData()->facingLeft);
-		ImGui::Text("currentActionNoNeutral %d", g_interfaces.player1.GetData()->currentActionNoNeutral);
-		ImGui::Text("blockstun %d", g_interfaces.player1.GetData()->blockstun);
-		ImGui::Text("hitstun %d", g_interfaces.player1.GetData()->hitstun);
-		ImGui::Text("typeOfAttack %d", g_interfaces.player1.GetData()->typeOfAttack);
-		ImGui::Text("hitstop %d", g_interfaces.player1.GetData()->hitstop);
-		ImGui::Text("actionTimeNoHitstop %d", g_interfaces.player1.GetData()->actionTimeNoHitstop);
-		ImGui::Text("lastAction %d", g_interfaces.player1.GetData()->lastAction);
-		ImGui::Text("comboProration %d", g_interfaces.player1.GetData()->comboProration);
-		ImGui::Text("starterRating %d", g_interfaces.player1.GetData()->starterRating);
-		ImGui::Text("comboTime %d", g_interfaces.player1.GetData()->comboTime);
-		ImGui::Text("frame_count_minus_1 %d", g_interfaces.player1.GetData()->frame_count_minus_1);
-		ImGui::Text("timeAfterTechIsPerformed %d", g_interfaces.player1.GetData()->timeAfterTechIsPerformed);
-		ImGui::Text("heatMeter %d", g_interfaces.player1.GetData()->heatMeter);
-		ImGui::Text("overdriveMeter %d", g_interfaces.player1.GetData()->overdriveMeter);
-		ImGui::Text("overdriveTimeleft %d", g_interfaces.player1.GetData()->overdriveTimeleft);
-		ImGui::Text("currentHP %d", g_interfaces.player1.GetData()->currentHP);
-		ImGui::Text("charIndex %d", g_interfaces.player1.GetData()->charIndex);
-		ImGui::Text("position_x %d", g_interfaces.player1.GetData()->position_x);
-		ImGui::Text("position_y_dupe %d", g_interfaces.player1.GetData()->position_y_dupe);
-
-		ImGui::Text("Drive1 %d", g_interfaces.player1.GetData()->Drive1);
-		ImGui::Text("Drive0 %d", g_interfaces.player1.GetData()->Drive0);
-		ImGui::Text("TagerMagnetism %d", g_interfaces.player1.GetData()->TagerMagnetism);
-		ImGui::Text("LitchiStaffState %d", g_interfaces.player1.GetData()->LitchiStaffState);
-		ImGui::Text("Drive11 %d", g_interfaces.player1.GetData()->Drive11);
-		ImGui::Text("Drive2 %d", g_interfaces.player1.GetData()->Drive2);
-		ImGui::Text("SLOT_59 %d", g_interfaces.player1.GetData()->SLOT_59);
-		ImGui::Text("CelicaRegen %d", g_interfaces.player1.GetData()->CelicaRegen);
-		ImGui::Text("SLOT_31 %d", g_interfaces.player1.GetData()->SLOT_31);
-		ImGui::Text("Drive1_type %d", g_interfaces.player1.GetData()->Drive1_type);
-
-		ImGui::Text("Drive12 %d", g_interfaces.player1.GetData()->slot2_or_slot4);
-		ImGui::Text("Drive3 %d", g_interfaces.player1.GetData()->Drive3);
-		ImGui::Text("SLOT_60 %d", g_interfaces.player1.GetData()->SLOT_60);
-		ImGui::Text("SLOT_61 %d", g_interfaces.player1.GetData()->SLOT_61);
-		ImGui::Text("SLOT_62 %d", g_interfaces.player1.GetData()->SLOT_62);
-	}
+	
 	
 		
 		

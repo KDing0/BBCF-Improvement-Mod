@@ -19,6 +19,5 @@ SETTING(bool, vsync, "V-sync", "0");
 SETTING(int, menusize, "MenuSize", "2");
 SETTING(bool, notifications, "Notifications", "1");
 SETTING(bool, checkupdates, "CheckUpdates", "1");
-SETTING(std::string, dinputDllWrapper, "DinputDllWrapper", "none");
 SETTING(bool, loadforeignpalettes, "LoadForeignPalettesToggleDefault", "1");
 

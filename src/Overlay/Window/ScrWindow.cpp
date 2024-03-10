@@ -327,14 +327,14 @@ void ScrWindow::DrawStatesSection()
         static bool isActive_old;
         static bool isActive = false;
         if (ImGui::Checkbox("Naoto EN specials toggle", &isActive)) {
-            memset(&g_interfaces.player2.GetData()->Drive12, 0x00000018, 4);
+            memset(&g_interfaces.player2.GetData()->slot2_or_slot4, 0x00000018, 4);
         }
         if (isActive) {
-            memset(&g_interfaces.player2.GetData()->Drive12, 0x00000018, 4);
+            memset(&g_interfaces.player2.GetData()->slot2_or_slot4, 0x00000018, 4);
         }
         else {
             if (isActive != isActive_old) {
-                memset(&g_interfaces.player2.GetData()->Drive12, 0, 4);
+                memset(&g_interfaces.player2.GetData()->slot2_or_slot4, 0, 4);
             }
         }
         isActive_old = isActive;
