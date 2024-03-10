@@ -32,14 +32,14 @@ public:
 
 	char pad_0174[8]; //0x0174
 	int32_t SLOT_31; //0x17C //EsBuff
- 	int32_t SLOT_51; //0x0180 //bang kite float time
- 	int32_t SLOT_52; //0x0184
- 	int32_t SLOT_53; //0x0188
- 	int32_t SLOT_54; //0x018C
- 	int32_t SLOT_55; //0x0190
- 	int32_t SLOT_56; //0x0194
- 	int32_t SLOT_57; //0x0198
- 	int32_t SLOT_58; //0x019C
+	int32_t SLOT_51; //0x0180 //bang kite float time
+	int32_t SLOT_52; //0x0184
+	int32_t SLOT_53; //0x0188
+	int32_t SLOT_54; //0x018C
+	int32_t SLOT_55; //0x0190
+	int32_t SLOT_56; //0x0194
+	int32_t SLOT_57; //0x0198
+	int32_t SLOT_58; //0x019C
 	int32_t SLOT_59; //0x1A0 //bang seal //azrael fireball /Plat item type //Drive10
 	int32_t SLOT_60; //0x1A4 //bang seal //Drive20
 	int32_t SLOT_61; //0x1A8 //bang seal //Drive30
@@ -48,7 +48,7 @@ public:
 	char pad_01B0[16]; //0x01B0
 	int32_t overdriveTimeleft; //0x01C0
 	int32_t overdriveTimerStartedAt; //0x01C4
-	char pad_01C8[20]; //0x01C8
+	char pad_01C8[12]; //0x01C8
 	int32_t moveSuperflashTime; //0x01D4
 	char pad_01D8[4]; //0x01D8
 	int32_t superflashTime; //0x01DC
@@ -58,7 +58,7 @@ public:
 	char pad_01E4[4]; //0x01E4
 	class CharData* ownerEntity; //0x01E8
 
-//exp
+	//exp
 	char pad_01EC[4];
 	class CharData* enemyChar; //0x01F0 dont know exactly what it is yet, just that it is checked and I need to save it 
 	char pad_01F4[54]; //0x01F4 maybe this should be 56?
@@ -71,8 +71,8 @@ public:
 	//0x0254 significant?
 	uint32_t bitflags_for_curr_state_properties_or_smth; // 0x025c holds some properties of attacks it seems in something like bitfields. To check for inactive hitboxes from multihits use the mask xxxxx400.
 	char pad_0260[4];//0x0260
-	
-//exp 
+
+	//exp 
 	int32_t facingLeft; //0x0264 is it not facing right?
 	int32_t position_x; //0x0268
 	int32_t position_y; //0x026C
@@ -144,13 +144,17 @@ public:
 	int64_t currentSprite; // 0x01338 the name of the current sprite
 	char pad_1340[3252]; //0x01340
 	char lastAction[32]; //0x1FF4
+
+
 	//char pad_2008[12]; //0x2008
-	char current_action2[20];//0x2014 another current action I guess, gets set by the set_action_override
-	char pad_2028[24]; //0x2028
+	char currentActionNoNeutral[32]; //0x2014
+	char pad_2034[12]; //0x2034 
 	char set_action_override[20]; //0x2040 this sets the current action overriding the script order I guess? not sure, still need more testing
 	char pad_2054[28]; //0x2054
-	char currentAction[20]; //0x2070
-	char pad_2084[452]; //0x2084
+	char currentAction[32]; //0x2070
+	char pad_2090[232]; //0x2090
+	int32_t TagerMagnetism; //0x2178
+	char pad_217C[204];  //0x217C
 	char char_abbr[4]; //0x2248
 	//char pad_224C[40]; //0x224C
 	char pad_224C[20]; //0x224C
@@ -159,7 +163,9 @@ public:
 
 	//thanks to kding0
 	int32_t blockstun; //0x2274
-	char pad_2278[12024]; //0x2278
+	char pad_2278[172]; //0x2278
+	char id1[8]; //0x2324
+	char pad_232C[11844]; //0x232C
 	int32_t hitstun; //0x5170
 	char pad_5174[140]; //0x5174
 	uint32_t hardLandingRecovery; //0x5200, represents the amount of stiffLanding recovery frames to be applied on landing. Probably the amount to loop in CmnActLandingStiffLoop specifically
@@ -268,7 +274,7 @@ public:
 	int8_t buffer_L_236_5f; //0x1E8A4, +108 236 within 5 frames of input valid, for mai's enhanced thrust
 	int8_t buffer_L_214_5f; //0x1E8A5, +109 214 for mai backflip idk why its special
 
-	
+
 	char R_input_buffer_flag_base; //0x1E8A6
 	/*input buffer for Right side, size=0x10A this will skip all the non motion inputs for now*/
 	char pad_1E8A7[0xAB];//0x1E8A7 the "non-special" inputs should be here, they should be duplicated maybe?
@@ -361,5 +367,3 @@ public:
 
 
 }; //Size: 0x214C4
-
-

@@ -680,13 +680,13 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	case 22://Azrael
 		meta->CharSpecific1[0] = focusCharData->Drive1 > 0; //aztopWeakspot//Drive1 //TODO:Check if the place drive is stored in changes
 		meta->CharSpecific2[0] = focusCharData->Drive2 > 0;//azBotWeakspot //Drive2
-		meta->CharSpecific3[0] = focusCharData->Drive10; //azFireball
+		meta->CharSpecific3[0] = focusCharData->SLOT_59; //azFireball
 		break;
 	case 26://Celica
 		meta->CharSpecific1[0] = focusCharData->CelicaRegen; //Celicaregen
 		break;
 	case 33://ES
-		meta->CharSpecific1[0] = focusCharData->EsBuff;//Esbuff
+		meta->CharSpecific1[0] = focusCharData->SLOT_31;//Esbuff
 		break;
 	case 11://Nu
 		meta->CharSpecific1[0] = focusCharData->Drive0 == 240; //Gravity
@@ -702,17 +702,17 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->CharSpecific2[0] = focusCharData->Drive1_type;//WolfState
 		break;
 	case 17://Plat
-		meta->CharSpecific1[0] = focusCharData->Drive10; //CurItem
+		meta->CharSpecific1[0] = focusCharData->SLOT_59; //CurItem
 		meta->CharSpecific2[0] = focusCharData->Drive11;//NextItem
 		meta->CharSpecific3[0] = focusCharData->Drive1;	//ItemNr
 		break;
 	case 18://Relius
 		meta->CharSpecific1[0] = focusCharData->Drive1; //DollMeter
-		meta->CharSpecific2[0] = focusCharData->Drive12; //DollState
+		meta->CharSpecific2[0] = focusCharData->slot2_or_slot4; //DollState
 		meta->CharSpecific3[0] = focusCharData->Drive1_type == 160; //DollCooldown
 		break;
 	case 32://Susanoo
-		buffVal = focusCharData->Drive12;
+		buffVal = focusCharData->slot2_or_slot4;
 		testVal = 0;
 		testVal = buffVal - 4096;
 		if (testVal >= 0) { meta->CharSpecific5[0] = 1; buffVal = testVal; }//UnlockNr5
@@ -759,7 +759,7 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->CharSpecific2[0] = enemyCharData->Drive2 > 0;//JubeiMark
 		break;
 	case 31://Izanami
-		meta->CharSpecific1[0] = focusCharData->Drive12 > 0; //Floating
+		meta->CharSpecific1[0] = focusCharData->slot2_or_slot4 > 0; //Floating
 		meta->CharSpecific2[0] = focusCharData->UnknownDriveVal0 > 0;//Ribcage
 		meta->CharSpecific3[0] = focusCharData->Drive3 > 0;//ShotCooldown
 		meta->CharSpecific4[0] = focusCharData->UnknownDriveVal1 > 0;//Stance
@@ -767,7 +767,7 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	case 29://Nine
 		meta->CharSpecific1[0] = enemyCharData->Drive1;//Spell
 		meta->CharSpecific2[0] = enemyCharData->Drive2;//SpellBackup
-		meta->CharSpecific3[0] = enemyCharData->Drive12;//Slots
+		meta->CharSpecific3[0] = enemyCharData->slot2_or_slot4;//Slots
 		meta->CharSpecific4[0] = enemyCharData->Drive11;//SlotsBackup
 		break;
 	case 9://Carl
@@ -781,7 +781,7 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->CharSpecific1[0] = focusCharData->Drive1;//GravitronCount
 		break;
 	case 19://Izayoi
-		meta->CharSpecific1[0] = focusCharData->Drive12 > 0; //state
+		meta->CharSpecific1[0] = focusCharData->slot2_or_slot4 > 0; //state
 		meta->CharSpecific2[0] = focusCharData->Drive1; //stocks
 		meta->CharSpecific3[0] = focusCharData->Drive2 > 0; //supermode
 		break;
@@ -790,10 +790,10 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->CharSpecific2[0] = focusCharData->Drive1_type > 0;//curseon
 		break;
 	case 8://Bang
-		meta->CharSpecific1[0] = focusCharData->Drive10;//FRKZSeal
-		meta->CharSpecific2[0] = focusCharData->Drive20;//FRKZSeal
-		meta->CharSpecific3[0] = focusCharData->Drive30;;//FRKZSeal
-		meta->CharSpecific4[0] = focusCharData->lambda_nu_drive_hitcount;;//FRKZSeal
+		meta->CharSpecific1[0] = focusCharData->SLOT_59;//FRKZSeal
+		meta->CharSpecific2[0] = focusCharData->SLOT_60;//FRKZSeal
+		meta->CharSpecific3[0] = focusCharData->SLOT_61;;//FRKZSeal
+		meta->CharSpecific4[0] = focusCharData->SLOT_62;;//FRKZSeal
 		meta->CharSpecific5[0] = focusCharData->Drive1;;//Nailcount
 		break;
 	case 20://Amane
@@ -815,7 +815,7 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	case 22://Azrael
 		meta->CharSpecific1[1] = enemyCharData->Drive1 > 0; //aztopWeakspot
 		meta->CharSpecific2[1] = enemyCharData->Drive2 > 0;//azBotWeakspot
-		meta->CharSpecific3[1] = enemyCharData->Drive10; //azFireball
+		meta->CharSpecific3[1] = enemyCharData->SLOT_59; //azFireball
 		break;
 	case 13://Hazama
 		meta->CharSpecific1[1] = enemyCharData->Drive0; //hazchains
@@ -825,17 +825,17 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->CharSpecific2[1] = enemyCharData->Drive1_type;
 		break;
 	case 17://Plat
-		meta->CharSpecific1[1] = enemyCharData->Drive10;
+		meta->CharSpecific1[1] = enemyCharData->SLOT_59;
 		meta->CharSpecific2[1] = enemyCharData->Drive11;
 		meta->CharSpecific3[1] = enemyCharData->Drive1;
 		break;
 	case 18://Relius
 		meta->CharSpecific1[1] = enemyCharData->Drive1;
-		meta->CharSpecific2[1] = enemyCharData->Drive12;
+		meta->CharSpecific2[1] = enemyCharData->slot2_or_slot4;
 		meta->CharSpecific3[1] = enemyCharData->Drive1_type == 160;
 		break;
 	case 32://Susanoo
-		buffVal = enemyCharData->Drive12;
+		buffVal = enemyCharData->slot2_or_slot4;
 		testVal = 0;
 		testVal = buffVal - 4096;
 		if (testVal >= 0) { meta->CharSpecific5[1] = 1; buffVal = testVal; }//UnlockNr5
@@ -881,7 +881,7 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->CharSpecific2[1] = enemyCharData->Drive2 > 0;//JubeiMark
 		break;
 	case 31://Izanami
-		meta->CharSpecific1[1] = enemyCharData->Drive12 > 0; //Floating
+		meta->CharSpecific1[1] = enemyCharData->slot2_or_slot4 > 0; //Floating
 		meta->CharSpecific2[1] = enemyCharData->UnknownDriveVal0 > 0;//Ribcage
 		meta->CharSpecific3[1] = enemyCharData->Drive3 > 0;//ShotCooldown
 		meta->CharSpecific4[1] = enemyCharData->UnknownDriveVal1 > 0;//Stance
@@ -889,7 +889,7 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 	case 29://Nine
 		meta->CharSpecific1[1] = enemyCharData->Drive1;//Spell
 		meta->CharSpecific2[1] = enemyCharData->Drive2;//SpellBackup
-		meta->CharSpecific3[1] = enemyCharData->Drive12;//Slots
+		meta->CharSpecific3[1] = enemyCharData->slot2_or_slot4;//Slots
 		meta->CharSpecific4[1] = enemyCharData->Drive11;//SlotsBackup
 		break;
 	case 9://Carl
@@ -903,7 +903,7 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->CharSpecific1[1] = enemyCharData->Drive1;//GravitronCount
 		break;
 	case 19://Izayoi
-		meta->CharSpecific1[1] = enemyCharData->Drive12 > 0;
+		meta->CharSpecific1[1] = enemyCharData->slot2_or_slot4 > 0;
 		meta->CharSpecific2[1] = enemyCharData->Drive1;
 		meta->CharSpecific3[1] = enemyCharData->Drive2 > 0;
 		break;
@@ -912,10 +912,10 @@ std::shared_ptr<Metadata> RecordCbrMetaData(bool PlayerIndex, int input) {
 		meta->CharSpecific2[1] = enemyCharData->Drive1_type > 0;
 		break;
 	case 8://Bang
-		meta->CharSpecific1[1] = enemyCharData->Drive10;//FRKZSeal
-		meta->CharSpecific2[1] = enemyCharData->Drive20;//FRKZSeal
-		meta->CharSpecific3[1] = enemyCharData->Drive30;;//FRKZSeal
-		meta->CharSpecific4[1] = enemyCharData->lambda_nu_drive_hitcount;;//FRKZSeal
+		meta->CharSpecific1[1] = enemyCharData->SLOT_59;//FRKZSeal
+		meta->CharSpecific2[1] = enemyCharData->SLOT_60;//FRKZSeal
+		meta->CharSpecific3[1] = enemyCharData->SLOT_61;;//FRKZSeal
+		meta->CharSpecific4[1] = enemyCharData->SLOT_62;;//FRKZSeal
 		meta->CharSpecific5[1] = enemyCharData->Drive1;;//Nailcount
 		break;
 	case 20://Amane
