@@ -7,6 +7,7 @@ interfaces_t g_interfaces = {};
 gameProc_t g_gameProc = {};
 temps_t g_tempVals = {};
 gameVals_t g_gameVals = {};
+modValues_t g_modVals = {};
 
 void InitManagers()
 {

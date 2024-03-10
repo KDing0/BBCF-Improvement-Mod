@@ -90,14 +90,19 @@ struct gameVals_t
 	int entityCount;
 
 	Room* pRoom;
-	bool enableForeignPalettes = true;
+	
 };
 
 struct gameProc_t
 {
 	HWND hWndGameWindow;
 };
-
+struct modValues_t {
+	bool enableForeignPalettes = true; 
+	int save_states_save_keycode;
+	int save_states_load_keycode;
+	int replay_takeover_load_keycode;
+};
 //temporary placeholders until wrappers are created / final addresses updated
 struct temps_t
 {
@@ -113,6 +118,7 @@ extern interfaces_t g_interfaces;
 extern gameProc_t g_gameProc;
 extern gameVals_t g_gameVals;
 extern temps_t g_tempVals;
+extern modValues_t g_modVals;
 
 void InitManagers();
 void CleanupInterfaces();

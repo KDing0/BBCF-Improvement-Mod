@@ -31,6 +31,7 @@
 
 void ScrWindow::Draw()
 {
+    
     static bool random_seeded = false;
     if (!random_seeded){
         std::srand(static_cast<unsigned int>(std::time(nullptr)));
@@ -43,9 +44,11 @@ void ScrWindow::Draw()
     DrawGenericOptionsSection();
     DrawStatesSection();
     DrawPlaybackSection();
+    DrawSaveStates();
     DrawReplayTheaterSection();
     DrawReplayRewind();
-    DrawVeryExperimentalSection2();
+    
+    DrawReplayTakeover();
     DrawRoomSection();
     DrawInputBufferButton();
     DrawComboDataButton();
@@ -172,12 +175,13 @@ void ScrWindow::check_wakeup_delay() {
 
 }
 void ScrWindow::DrawGenericOptionsSection() {
-    static bool check_dummy = g_gameVals.enableForeignPalettes;
-    ImGui::TextWrapped("If you're having crash issues when joining ranked from training mode, disable this when searching in training mode, can be reenabled for any other situation. It stops your game from loading foreign palettes. This is just a stopgap, grim will come with the real fix.");
+    static bool check_dummy = g_modVals.enableForeignPalettes;
     if (ImGui::Checkbox("Load foreign palettes", &check_dummy)) {
-        g_gameVals.enableForeignPalettes = !g_gameVals.enableForeignPalettes;
+        g_modVals.enableForeignPalettes = !g_modVals.enableForeignPalettes;
 
     }
+    ImGui::SameLine();
+    ImGui::ShowHelpMarker("If you're having crash issues when joining ranked from training mode, disable this when searching in training mode, can be reenabled for any other situation. It stops your game from loading foreign palettes. This is just a stopgap, grim will come with the real fix.");
     if (*g_gameVals.pGameMode == GameMode_Training && !g_interfaces.player2.IsCharDataNullPtr()) {
         static bool check_enable_wakeup_delay = false;
         ImGui::Checkbox("Enable wakeup delay override", &check_enable_wakeup_delay);
@@ -1355,6 +1359,83 @@ void ScrWindow::DrawPlaybackSection() {
 //    }
 //}
 
+void ScrWindow::DrawSaveStates() {
+    static SnapshotApparatus* snap_apparatus = nullptr;
+    
+    if (!ImGui::CollapsingHeader("Save states"))
+        return;
+    if (*(bbcf_base_adress + 0x8F7758) == 0) {
+        if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
+            if (snap_apparatus == nullptr) {
+
+                snap_apparatus = new SnapshotApparatus();
+            }
+            if (!snap_apparatus->check_if_valid(g_interfaces.player1.GetData(),
+                g_interfaces.player2.GetData())) {
+                delete snap_apparatus;
+                snap_apparatus = new SnapshotApparatus();
+            }
+            static float wait_before_exec_s = 0;
+
+            if (ImGui::Button("Save snapshot") || ImGui::IsKeyPressed(g_modVals.save_states_save_keycode)) {
+                snap_apparatus->save_snapshot(0);
+            }
+            ImGui::SameLine();
+            ImGui::ShowHelpMarker("You can use a hotkey to activate it, default is F5 but can be changed in settings.ini between F1-9.");
+            ImGui::SameLine();
+            if (snap_apparatus->snapshot_count != 0) {
+                if (ImGui::Button("Load snapshot") || ImGui::IsKeyPressed(g_modVals.save_states_load_keycode)) {
+                    snap_apparatus->load_snapshot(0);
+                    if (wait_before_exec_s > 0) {
+                        g_gameVals.isFrameFrozen = true;
+
+                        this->is_setup_time_running = true;
+                        this->base_time = wait_before_exec_s;
+                    }
+
+                }
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+                ImGui::Button("Load snapshot");
+                ImGui::PopStyleColor();
+
+            }
+            ImGui::SameLine();
+            ImGui::ShowHelpMarker("You can use a hotkey to activate it, default is F9 but can be changed in settings.ini between F1-9.");
+
+            ImGui::InputFloat("Setup time(s)", &wait_before_exec_s, 0.3f);
+            ImGui::SameLine();
+            ImGui::ShowHelpMarker("This pauses the game once you load a state for the amount set in order to adjust hand position. Set to 0 if no delay is desired.");
+            if (is_setup_time_running == true) {
+                this->base_time -= ImGui::GetIO().DeltaTime;
+                ImGui::OpenPopup("progress_bar");
+                ImGui::SetNextWindowSize(ImVec2(400, 50));
+                if (ImGui::BeginPopupModal("progress_bar", NULL, ImGuiWindowFlags_NoTitleBar)) {
+
+                    float progress = this->base_time / (wait_before_exec_s);
+                    ImGui::ProgressBar(progress);
+                    if (progress <= 0) {
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+
+                if (this->base_time < 0) {
+                    g_gameVals.isFrameFrozen = false;
+                    this->is_setup_time_running = false;
+                }
+            }
+        }
+        else {
+            ImGui::Text("You must be in a mode where state can be saved");
+        }
+
+    }
+    else {
+        ImGui::Text("You cannot use this feature while searching for a ranked match");
+    }
+}
 bool compareFiles(const std::string& p1, const std::string& p2) {
     std::ifstream f1(p1, std::ifstream::binary | std::ifstream::ate);
     std::ifstream f2(p2, std::ifstream::binary | std::ifstream::ate);
@@ -1497,6 +1578,171 @@ unsigned int count_entities(bool unk_status2) {
     return 0;
 }
 void ScrWindow::DrawReplayRewind() {
+
+    if (!ImGui::CollapsingHeader("Replay Rewind::experimental"))
+        return;
+    ImGui::Text("Active entities: %d", count_entities(false));
+    ImGui::Text("Active entities with unk_status2 = 2: %d", count_entities(true));
+    static int prev_match_state;
+    static bool rec = false;
+    const int FRAME_STEP = 1800;
+    auto bbcf_base_adress = GetBbcfBaseAdress();
+    char* ptr_replay_theater_current_frame = bbcf_base_adress + 0x11C0348;
+    static bool playing = false;
+    static int curr_frame = *g_gameVals.pFrameCount;
+    static int prev_frame;
+    static int frames_recorded = 0;
+    static int rewind_pos = 0;
+    static int round_start_frame = 0;
+    static std::vector<unsigned int> frame_checkpoints = {};
+
+    //static std::vector<std::shared_ptr<FrameState>> framestates;
+    static SnapshotApparatus* snap_apparatus_replay_rewind = nullptr;
+
+    if (*(bbcf_base_adress + 0x8F7758) == 0) {
+        if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
+            if (snap_apparatus_replay_rewind == nullptr) {
+
+                snap_apparatus_replay_rewind = new SnapshotApparatus();
+            }
+            if (!snap_apparatus_replay_rewind->check_if_valid(g_interfaces.player1.GetData(),
+                g_interfaces.player2.GetData())) {
+                delete snap_apparatus_replay_rewind;
+                snap_apparatus_replay_rewind = new SnapshotApparatus();
+            }
+            /*if (*g_gameVals.pGameMode == GameMode_ReplayTheater && *g_gameVals.pMatchState == MatchState_Fight) {
+                toggle_unknown2_asm_code();
+            }*/
+            curr_frame = *g_gameVals.pFrameCount;
+
+            if (*g_gameVals.pGameMode != GameMode_ReplayTheater ||
+                (*g_gameVals.pMatchState != MatchState_Fight && *g_gameVals.pMatchState != MatchState_RebelActionRoundSign && *g_gameVals.pMatchState != MatchState_FinishSign) ||
+                *g_gameVals.pGameState != GameState_InMatch) {
+                if (rec) {
+                    rec = false;
+                    //framestates = {};
+                    snap_apparatus_replay_rewind->clear_count();
+
+                    frames_recorded = 0;
+                    rewind_pos = 0;
+                    frame_checkpoints.clear();
+                    //force clear the vectors
+                    return;
+                }
+                else {
+                    ImGui::Text("Only works during a running replay");
+
+                    return;
+                }
+            }
+
+
+
+
+
+
+
+            //*ptr_replay_theater_current_frame = *g_gameVals.pFrameCount;
+            memcpy(ptr_replay_theater_current_frame, g_gameVals.pFrameCount, sizeof(unsigned int));
+            ///grabs the frame count on round start
+            if (*g_gameVals.pGameMode == GameMode_ReplayTheater && prev_match_state && prev_match_state == MatchState_RebelActionRoundSign &&
+                *g_gameVals.pMatchState == MatchState_Fight && !g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
+                round_start_frame = *g_gameVals.pFrameCount;
+
+            }
+            ///automatic start rec on round start + 4 frames to alleviate the loss of buffering during countdown
+            if (*g_gameVals.pFrameCount == round_start_frame && *g_gameVals.pMatchState == MatchState_Fight && rec == false) {
+                rec = true;
+                frames_recorded += 1;
+                //framestates.push_back(std::make_shared<FrameState>());
+                snap_apparatus_replay_rewind->save_snapshot_prealloc();
+                frame_checkpoints.push_back(*g_gameVals.pFrameCount);
+                prev_frame = *g_gameVals.pFrameCount;
+
+            }
+            //automatic clear vector if change round or leave abruptly
+            if ((*g_gameVals.pGameMode == GameMode_ReplayTheater && prev_match_state == MatchState_Fight &&
+                *g_gameVals.pMatchState == MatchState_FinishSign && !g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr())
+                ||
+                *g_gameVals.pGameState != GameState_InMatch) {
+                rec = false;
+                //framestates = {};
+                frames_recorded = 0;
+                rewind_pos = 0;
+                frame_checkpoints.clear();
+                snap_apparatus_replay_rewind->clear_count();
+            }
+
+            if (rec && (*g_gameVals.pGameMode != GameMode_ReplayTheater || *g_gameVals.pMatchState != MatchState_Fight)) {
+                rec = false;
+            }
+            prev_match_state = *g_gameVals.pMatchState;
+
+            ImGui::Text("Frame stack: +%d", frames_recorded * FRAME_STEP);
+            ImGui::Text("Rewind pos: +%d", rewind_pos);
+            auto nearest_pos = find_nearest_checkpoint(frame_checkpoints);
+            ImGui::Text("Rewind checkpoint: %d    FF checkpoint(nearest): %d", nearest_pos[0], nearest_pos[1]);
+            ImGui::Text("snap_apparatus snapshot_count: %d", snap_apparatus_replay_rewind->snapshot_count);
+
+
+            if (ImGui::Button("Rewind")) {
+
+                int pos = find_nearest_checkpoint(frame_checkpoints)[0];
+                if (pos != -1) {
+
+                    snap_apparatus_replay_rewind->load_snapshot_prealloc(pos);
+                    //framestates[pos]->load_frame_state(false);
+                    //starts the replay
+                    char* replay_theather_speed = bbcf_base_adress + 0x11C0350;
+                    *replay_theather_speed = 0;
+                    rewind_pos = pos;
+                }
+                // }
+            }
+
+
+            if (ImGui::Button("Restart Round")) {
+
+                //if (!framestates.empty()) {
+                auto pos = 0;
+                if (pos != -1) {
+
+                    //framestates[pos]->load_frame_state(true);
+                    snap_apparatus_replay_rewind->load_snapshot_prealloc(0);
+                    //starts the replay
+                    char* replay_theather_speed = bbcf_base_adress + 0x11C0350;
+                    *replay_theather_speed = 0;
+                    rewind_pos = pos;
+                }
+                //}
+            }
+
+            if (rec) {
+                auto save = true;
+                for (auto saved_frame : frame_checkpoints) {
+                    if (curr_frame == saved_frame) {
+                        save = false;
+                    }
+                }
+                // if (curr_frame >= prev_frame + FRAME_STEP && save==true) {
+                if (curr_frame % FRAME_STEP == 0 && save == true) {
+                    // framestates.push_back(std::make_shared<FrameState>());
+                    snap_apparatus_replay_rewind->save_snapshot_prealloc();
+                    frame_checkpoints.push_back(*g_gameVals.pFrameCount);
+                    frames_recorded += 1;
+                    rewind_pos += 1;
+                    prev_frame = curr_frame;
+                }
+            }
+            //prev_frame = curr_frame;
+            return;
+        }
+    }
+    else {
+        ImGui::Text("You cannot use this feature while searching for a ranked match");
+    }
+}
+void ScrWindow::DrawReplayRewind_old() {
 
     if (!ImGui::CollapsingHeader("Replay Rewind"))
         return;
@@ -1752,11 +1998,11 @@ std::vector<int> find_nearest_checkpoint(std::vector<unsigned int> frameCount) {
     int nearest_fwd_pos = 0;
     int i = 0;
     for (auto frameCheckpoint : frameCount) {
-        if ((fc - frameCheckpoint < fc - nearest_back && fc - frameCheckpoint >0)|| nearest_back == 0) {
+        if ((fc - frameCheckpoint < fc - nearest_back && fc - frameCheckpoint >60)|| nearest_back == 0) {
             nearest_back = frameCheckpoint;
             nearest_back_pos = i;
         }
-        if ((frameCheckpoint - fc < nearest_fwd - fc && frameCheckpoint-fc >0) || nearest_fwd == 0) {
+        if ((frameCheckpoint - fc < nearest_fwd - fc && frameCheckpoint-fc >60) || nearest_fwd == 0) {
             nearest_fwd = frameCheckpoint;
             nearest_fwd_pos = i;
         }
@@ -1775,7 +2021,7 @@ std::vector<int> find_nearest_checkpoint(std::vector<unsigned int> frameCount) {
 
 
 
-void ScrWindow::DrawVeryExperimentalSection2() {
+void ScrWindow::DrawReplayTakeover() {
    // if(ImGui::Button("load other people pallettes")) {
  //       enableForeignPalettes = !enableForeignPalettes;
  //   }
@@ -1794,198 +2040,153 @@ void ScrWindow::DrawVeryExperimentalSection2() {
         CharData p2;
         D3DXMATRIX viewMatrixes;
     };
+  
     static states state{};
     static std::unique_ptr<FrameState> framestate;
     char* bbcf_base = GetBbcfBaseAdress();
     static std::vector<char> replay_action_load{};
+    static SnapshotApparatus* snap_apparatus_takeover = nullptr;
+    static int facing_left_replay_takeover = 0;
+    char current_round = *(bbcf_base + 0x11C034C);
+    //these are merely demonstrative, the formula to get the start of a players inputs in a round is: bbcf_base + 0x115B470 + 0x8d4 + (0x7080 * player_to_playback) + (0xE100 * current_round);
     char* r1p1_start = bbcf_base + 0x115B470 + 0x8d4;
     char* r1p2_start = bbcf_base + 0x115B470 + 0x8d4 + 0x7080;
-    if (!ImGui::CollapsingHeader("Replay takeover/save states::experimental"))
+    char* r2p1_start = bbcf_base + 0x115B470 + 0x8d4 + 0x7080 + 0x7080;
+    char* r2p2_start = bbcf_base + 0x115B470 + 0x8d4 + 0x7080 + 0x7080 + 0x7080;
+    char* r3p1_start = bbcf_base + 0x115B470 + 0x8d4 + 0x7080 + 0x7080 + 0x7080 + 0x7080;
+    char* r3p2_start = bbcf_base + 0x115B470 + 0x8d4 + 0x7080 + 0x7080 + 0x7080 + 0x7080 + 0x7080;
+    static float wait_before_exec_s2 = 0; //for the little load delay bar
+
+    if (!ImGui::CollapsingHeader("Replay Takeover"))
         return;
-    ImGui::Text("time: %d", *g_gameVals.pMatchTimer);
-    if (ImGui::Button("save state")
-          || ImGui::IsKeyPressed(119)
-        ) {
+    if (*(bbcf_base_adress + 0x8F7758) == 0) { //checks if it is searching for a ranked match
         if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
-            framestate = std::make_unique<FrameState>(FrameState());
-            state.p1 = *g_interfaces.player1.GetData();
-            state.p2 = *g_interfaces.player2.GetData();
+            if (snap_apparatus_takeover == nullptr) {
 
-
-
-            replay_action_load = {};
-
-            int time_count_slot_1_addr_offset = 0x9075E8;
-            char* start_of_slot_inputs = bbcf_base + time_count_slot_1_addr_offset + 0x10;
-            //auto r1p2_curr_action = r1p2_start + *g_gameVals.pFrameCount;
-            for (int i = 0; i < 0x400; i++) {
-                char* r1p2_curr_action = r1p2_start + (*g_gameVals.pFrameCount + i)*2;
-                replay_action_load.push_back(*r1p2_curr_action);
-
-                //memcpy(start_of_slot_inputs, r1p2_curr_action, 4);
-                //memcpy(start_of_slot_inputs, r1p2_curr_action, 2);
+                snap_apparatus_takeover = new SnapshotApparatus();
             }
-            auto len_replay = replay_action_load.size();
-            //memcpy(start_of_slot_inputs, &replay_action_load[0], 0x400);
-            //facing dir on replay start
-            /*auto p1ec = &(g_interfaces.player2.GetData()->pad_01EC);
-            auto lces = &(g_interfaces.player2.GetData()->last_child_entity_spawned);
-            auto ece = &(g_interfaces.player2.GetData()->extra_child_entities);
-            auto p250 = &(g_interfaces.player2.GetData()->pad_0250);
-            auto fl = &(g_interfaces.player2.GetData()->facingLeft);*/
-
-            memcpy(bbcf_base + 0x9075D8, &g_interfaces.player2.GetData()->facingLeft, 1);
-            memcpy(bbcf_base + 0x9075E8, &len_replay, 4);
-            //memcpy(start_of_slot_inputs, r1p2_start + *g_gameVals.pFrameCount,0x400);
+            if (!snap_apparatus_takeover->check_if_valid(g_interfaces.player1.GetData(),
+                g_interfaces.player2.GetData())) {
+                delete snap_apparatus_takeover;
+                snap_apparatus_takeover = new SnapshotApparatus();
+            }
         }
-
-    }
-    if (ImGui::Button("takeover as P1")) {
-        if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
-            *g_gameVals.pGameMode = GameMode_Training;
+        else {
+            ImGui::Text("Cannot access replay takeover outside of a replay");
+            return;
         }
+        ImGui::Text("time: %d", *g_gameVals.pMatchTimer);
+        if (*g_gameVals.pGameMode == GameMode_ReplayTheater) {
+            if (ImGui::Button("Takeover as P1")) {
+                if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
+                    *g_gameVals.pGameMode = GameMode_Training;
+                    snap_apparatus_takeover->save_snapshot(0);
+                    int player_to_playback = 1;
+                    char* rpstart = r1p1_start + (0x7080 * player_to_playback) + (0xE100 * current_round);
+                    replay_action_load = {};
 
-    }
-    if (ImGui::Button("load state")
-        || ImGui::IsKeyPressed(120)
-        ) {
-        if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
-            if (g_gameVals.isP1CPU) {
-                auto p1 = g_interfaces.player1.GetData();
-                auto p2 = g_interfaces.player2.GetData();
-                g_interfaces.player2.GetData()->position_x = state.p1.position_x;
-                g_interfaces.player2.GetData()->position_x = state.p1.position_y;
-                g_interfaces.player2.GetData()->position_x = state.p1.position_y;
-                p2->position_x_dupe = state.p1.position_x_dupe;
-                p2->position_y_dupe = state.p1.position_y_dupe;
-                
-                
-                
-                g_interfaces.player1.GetData()->position_x = state.p2.position_x;
-                g_interfaces.player1.GetData()->position_x = state.p2.position_y;
-                p1->position_x_dupe = state.p2.position_x_dupe;
-                p1->position_y_dupe = state.p2.position_y_dupe;
-            }
-            else {
-                /**g_interfaces.player1.GetData() = state.p1;
-                g_interfaces.player1.GetData()->position_x = state.p1.position_x;
-                g_interfaces.player1.GetData()->position_x = state.p1.position_y;
-                g_interfaces.player2.GetData()->position_x = state.p2.position_x;
-                g_interfaces.player2.GetData()->position_x = state.p2.position_y;
 
-                *g_interfaces.player1.GetData() = state.p1;
-                *g_interfaces.player2.GetData() = state.p2;
-                memcpy(g_interfaces.player1.GetData(), &state.p1, 0x2084);
-                memcpy(g_interfaces.player2.GetData(), &state.p2, 0x2084);*/
 
-                framestate->load_frame_state(false);
+                    for (int i = 0; i < 0x400; i++) {
+                        char* recorded_input = rpstart + (*g_gameVals.pFrameCount + i) * 2;
+                        replay_action_load.push_back(*recorded_input);
+                    }
+                    facing_left_replay_takeover = g_interfaces.player2.GetData()->facingLeft2;
+                    *(bbcf_base + 0x891A38) = 0; // sets training mode to be "p1" sided
+                    *(bbcf_base + 0x8929A8) = 1; //p1 control related
+                    *(bbcf_base + 0x8929A4) = 0; //p1 control related
+                }
 
             }
+            ImGui::SameLine();
+            if (ImGui::Button("Takeover as P2")) {
+                if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
+                    *g_gameVals.pGameMode = GameMode_Training;
+                    snap_apparatus_takeover->save_snapshot(0);
+                    int player_to_playback = 0;
+                    char* rpstart = r1p1_start + (0x7080 * player_to_playback) + (0xE100 * current_round);
+                    replay_action_load = {};
+
+
+                    for (int i = 0; i < 0x400; i++) {
+
+                        char* recorded_input = rpstart + (*g_gameVals.pFrameCount + i) * 2;
+                        replay_action_load.push_back(*recorded_input);
+                    }
+                    auto len_replay = replay_action_load.size();
+                    facing_left_replay_takeover = g_interfaces.player1.GetData()->facingLeft2;
+                    //bypasses necessary to make p2 control 
+                    *(bbcf_base + 0x891A38) = 1; // sets training mode to be "p2" sided
+                    *(bbcf_base + 0x8929A8) = 0; //p2 control related
+                    *(bbcf_base + 0x8929A4) = 1; //p2 control related
+
+                }
+            }
+        }
+        if ((ImGui::Button("Load Replay State") || ImGui::IsKeyPressed(g_modVals.replay_takeover_load_keycode) )
+                && snap_apparatus_takeover->snapshot_count > 0) {
+            if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
+                snap_apparatus_takeover->load_snapshot(0);
+                playback_manager.load_into_slot(replay_action_load, facing_left_replay_takeover, 1);
+                playback_manager.set_active_slot(1);
+                playback_manager.set_playback_type(0); //forces playback type to be "normal" instead of "random"
+                playback_manager.set_playback_position(0); //makes sure the playback is in frame zero
+                playback_manager.set_playback_control(3); //activates the playback
+                if (wait_before_exec_s2 > 0) {
+                    g_gameVals.isFrameFrozen = true;
+
+                    this->is_setup_time_running = true;
+                    this->base_time = wait_before_exec_s2;
+                }
+
+            }
+        }
+        ImGui::SameLine();
+        ImGui::ShowHelpMarker("You can use a hotkey to activate it, default is F4 but can be changed in settings.ini between F1-9.");
+
+        ImGui::InputFloat("Setup time(s)", &wait_before_exec_s2, 0.3f);
+        ImGui::SameLine();
+        ImGui::ShowHelpMarker("This pauses the game once you load a state for the amount set in order to adjust hand position. Set to 0 if no delay is desired.");
+        if (is_setup_time_running == true) {
+            this->base_time -= ImGui::GetIO().DeltaTime;
+            ImGui::OpenPopup("progress_bar");
+            ImGui::SetNextWindowSize(ImVec2(400, 50)); 
+            if (ImGui::BeginPopupModal("progress_bar", NULL, ImGuiWindowFlags_NoTitleBar)) {
+
+                float progress = this->base_time / (wait_before_exec_s2);
+                ImGui::ProgressBar(progress);
+                if (progress <= 0) {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+
+            if (this->base_time < 0) {
+                g_gameVals.isFrameFrozen = false;
+                this->is_setup_time_running = false;
+            }
+        }
+        if (*g_gameVals.pGameMode == GameMode_Training) {
+            if (ImGui::Button("Return to replay")) {
+                playback_manager.set_playback_control(0); //makes sure the playback is stopped before going back to the replay
+                *g_gameVals.pGameMode = GameMode_ReplayTheater;
+                snap_apparatus_takeover->load_snapshot(0);
+            }
+
+            if (ImGui::Button("FIX PLAYBACK")) {
+                facing_left_replay_takeover = !facing_left_replay_takeover;
+            }
+            ImGui::SameLine();
+            ImGui::ShowHelpMarker("Use this if the takeover appears to be faulty before reporting an issue, it should correct it most of the time. \n\nIf you use it when it is already working it will make it appear faulty, clicking again should return it to the previous state.");
             
-            for (int i = 0; i < 0x200; i++) {
-                //char* r1p2_curr_action = r1p2_start + (*g_gameVals.pFrameCount + i) * 2;
-                char* r1p2_curr_action = r1p2_start + (*g_gameVals.pFrameCount + i) * 2;
-                int time_count_slot_1_addr_offset = 0x9075E8;
-                char* start_of_slot_inputs = bbcf_base + time_count_slot_1_addr_offset + 0x10;
-
-
-                
-                start_of_slot_inputs[i*2] = (int32_t)replay_action_load[i];
-                //memcpy(start_of_slot_inputs, &replay_action_load[i]);
-                //memcpy(start_of_slot_inputs, r1p2_curr_action, 4);
-                //memcpy(start_of_slot_inputs, r1p2_curr_action, 2);
-            }
-
-           char* active_slot = bbcf_base + 0x902C3C;
-           char* playback_control_ptr = bbcf_base + 0x1392d10 + 0x1ac2c; //set to 3 to start playback without direction adjustment, 0 for dummy, 1 for recording standby, 2 for bugged recording, 3 for playback, 4 for controller, 5 for cpu, 6 for continuous playback
-           int val_set = 3;
-           int slot = 0;
-           memcpy(active_slot, &slot, 4);
-           memcpy(playback_control_ptr, &val_set, 2);
-
-
-
-
-
-
-
-
-
         }
 
-
-
-    }
-    if (ImGui::Button("load state full")) {
-        if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
-            if (g_gameVals.isP1CPU) {
-                auto p1 = g_interfaces.player1.GetData();
-                auto p2 = g_interfaces.player2.GetData();
-                g_interfaces.player2.GetData()->position_x = state.p1.position_x;
-                g_interfaces.player2.GetData()->position_x = state.p1.position_y;
-                g_interfaces.player2.GetData()->position_x = state.p1.position_y;
-                p2->position_x_dupe = state.p1.position_x_dupe;
-                p2->position_y_dupe = state.p1.position_y_dupe;
-
-
-
-                g_interfaces.player1.GetData()->position_x = state.p2.position_x;
-                g_interfaces.player1.GetData()->position_x = state.p2.position_y;
-                p1->position_x_dupe = state.p2.position_x_dupe;
-                p1->position_y_dupe = state.p2.position_y_dupe;
-            }
-            else {
-                /**g_interfaces.player1.GetData() = state.p1;
-                g_interfaces.player1.GetData()->position_x = state.p1.position_x;
-                g_interfaces.player1.GetData()->position_x = state.p1.position_y;
-                g_interfaces.player2.GetData()->position_x = state.p2.position_x;
-                g_interfaces.player2.GetData()->position_x = state.p2.position_y;
-
-                *g_interfaces.player1.GetData() = state.p1;
-                *g_interfaces.player2.GetData() = state.p2;
-                memcpy(g_interfaces.player1.GetData(), &state.p1, 0x2084);
-                memcpy(g_interfaces.player2.GetData(), &state.p2, 0x2084);*/
-
-                framestate->load_frame_state(true);
-
-            }
-
-            for (int i = 0; i < 0x200; i++) {
-                //char* r1p2_curr_action = r1p2_start + (*g_gameVals.pFrameCount + i) * 2;
-                char* r1p2_curr_action = r1p2_start + (*g_gameVals.pFrameCount + i) * 2;
-                int time_count_slot_1_addr_offset = 0x9075E8;
-                char* start_of_slot_inputs = bbcf_base + time_count_slot_1_addr_offset + 0x10;
-
-
-
-                start_of_slot_inputs[i * 2] = (int32_t)replay_action_load[i];
-                //memcpy(start_of_slot_inputs, &replay_action_load[i]);
-                //memcpy(start_of_slot_inputs, r1p2_curr_action, 4);
-                //memcpy(start_of_slot_inputs, r1p2_curr_action, 2);
-            }
-
-            char* active_slot = bbcf_base + 0x902C3C;
-            char* playback_control_ptr = bbcf_base + 0x1392d10 + 0x1ac2c; //set to 3 to start playback without direction adjustment, 0 for dummy, 1 for recording standby, 2 for bugged recording, 3 for playback, 4 for controller, 5 for cpu, 6 for continuous playback
-            int val_set = 3;
-            int slot = 0;
-            memcpy(active_slot, &slot, 4);
-            memcpy(playback_control_ptr, &val_set, 2);
-
-
-
-
-
-
-
-
-
+        if (*g_gameVals.pGameMode == GameMode_Training) {
+            *g_gameVals.pMatchTimer = 3597;
         }
-
-
-
     }
-    if (*g_gameVals.pGameMode == GameMode_Training) {
-        *g_gameVals.pMatchTimer = 3597;
+    else {
+        ImGui::Text("You cannot use this feature while searching for a ranked match.");
     }
 }
 

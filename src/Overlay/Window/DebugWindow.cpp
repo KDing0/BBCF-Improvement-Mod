@@ -1,3 +1,4 @@
+#pragma once
 #include "DebugWindow.h"
 
 #include "Core/interfaces.h"
@@ -8,7 +9,8 @@
 #include "Overlay/WindowManager.h"
 #include "Overlay/Window/HitboxOverlay.h"
 #include "Core/info.h"
-
+//#include "Game/GhidraDefs.h"
+#include "Game/SnapshotApparatus/SnapshotApparatus.h"
 #define STB_IMAGE_IMPLEMENTATION
 //#include "stb_image.h"
 
@@ -137,13 +139,252 @@ void DebugWindow::DrawImGuiSection()
 
 void DebugWindow::DrawGameValuesSection()
 {
-	if (ImGui::Button("load_rollback_frames")) {
-		//_asm {
-			//must figure ou the arguments for the function
-		//	call 0xB13F20
-		//};
-		return;
+	//bbcf.exe+0x612888
+	//static unsigned char savedstate_mine[10][0xa10000] = {};
+	char* base_addr = GetBbcfBaseAdress();
+	if (ImGui::TreeNode("replay rewind testing")) {
+		ImGui::TreePop();
 	}
+
+	if (ImGui::TreeNode("snapshot testing")) {
+
+
+		void* DAT_01292888 = base_addr + 0x612888;
+		static SnapshotApparatus* snap_apparatus_debug = nullptr;
+		static int snapshot_position_counter = 0;
+		if (snap_apparatus_debug == nullptr) {
+			snap_apparatus_debug = new SnapshotApparatus();
+		}
+		if (ImGui::Button("Save snapshot")) {
+			snap_apparatus_debug->save_snapshot(0);
+
+
+		}
+		if (ImGui::Button("Load snapshot")) {
+			snap_apparatus_debug->load_snapshot(0);
+
+		}
+		if (ImGui::Button("Save snapshot replay mine struct")) {
+			Snapshot* buf = &snapshot_replay_pre_allocated[snapshot_position_counter %SNAPSHOT_PREALLOC_SIZE];
+			snap_apparatus_debug->save_snapshot(&buf);
+			//snap_apparatus_debug->save_snapshot((Snapshot**)savedstate_mine);
+			snapshot_position_counter += 1;
+
+		}
+		if (ImGui::Button("Load snapshot replay mine struct 0 ")) {
+			auto pos = &snapshot_replay_pre_allocated[0];
+			snap_apparatus_debug->load_snapshot(&snapshot_replay_pre_allocated[0]);
+
+		}
+		if (ImGui::Button("Load snapshot replay mine struct")) {
+			auto pos2 = &snapshot_replay_pre_allocated[(snapshot_position_counter-1) % SNAPSHOT_PREALLOC_SIZE];
+			snap_apparatus_debug->load_snapshot(&snapshot_replay_pre_allocated[(snapshot_position_counter-1)% SNAPSHOT_PREALLOC_SIZE]);
+
+		}
+		if (ImGui::TreeNode("Netcode stuff")) {
+
+			char* base_addr = GetBbcfBaseAdress();
+			void* addr = base_addr + 0x65bd08;
+			SteamPeer2PeerBackend* bckend = *(SteamPeer2PeerBackend**)addr;
+			static_DAT_of_PTR_on_load_4* DAT_on_load_4_addr = (static_DAT_of_PTR_on_load_4*)(base_addr + 0x612718);
+			SnapshotManager* snap_manager = 0;
+			if (DAT_on_load_4_addr) {
+				snap_manager = DAT_on_load_4_addr->ptr_snapshot_manager_mine;
+			}
+			void* initialize_ggpo_callbacks_struct_ptr = base_addr + 0x383dd0;
+			typedef void (*initialize_ggpo_callbacks_struct_decl)(GGPOSessionCallbacks*);
+			initialize_ggpo_callbacks_struct_decl initialize_ggpo_callbacks_struct = reinterpret_cast<initialize_ggpo_callbacks_struct_decl>(initialize_ggpo_callbacks_struct_ptr);
+			GGPOSessionCallbacks* callbacks_ptr = new GGPOSessionCallbacks;
+			initialize_ggpo_callbacks_struct(callbacks_ptr);
+
+			if (*(int*)DAT_01292888 == 0) {
+				//return;
+
+				//those are the changes to code directly to initializze maybe_network_stuff_init
+				// 
+				// 
+				// 
+				///PRELUDE
+				auto mem_offset_1 = 0xe5701;//2 bytes
+				auto mem_offset_2 = 0xe577d;//2 bytes
+				auto mem_offset_3 = 0xe5a9c;//6 bytes
+				char nops[] = "\x90\x90\x90\x90\x90\x90\x90\x90";
+				char oldmem_1[2];// = "\x90\x90\";
+				char oldmem_2[2];// = "\x90\x90\";
+				char oldmem_3[6];// = "\x90\x90\x90\x90\x90\x90\x90\x90";
+				void* ptr_oldmem_1 = base_addr + mem_offset_1;
+				void* ptr_oldmem_2 = base_addr + mem_offset_2;
+				void* ptr_oldmem_3 = base_addr + mem_offset_3;
+				memcpy(oldmem_1, ptr_oldmem_1, 2);
+				WriteToProtectedMemory((uintptr_t)ptr_oldmem_1, nops, 2);
+				memcpy(oldmem_2, ptr_oldmem_2, 2);
+				WriteToProtectedMemory((uintptr_t)ptr_oldmem_2, nops, 2);
+				memcpy(oldmem_3, ptr_oldmem_3, 6);
+				WriteToProtectedMemory((uintptr_t)ptr_oldmem_3, nops, 6);
+				//memcpy(ptr_oldmem_1, nops, 2);
+				///PRELUDE_END
+
+				//this is copied from "maybe_network_stuff_init
+				void** SCENE_CBattle_static_ptr = (void**)(base_addr + 0x8929B4);
+				void* maybe_network_stuff_init_ptr = base_addr + 0xe56f0;
+				typedef void (*maybe_network_stuff_init_decl)(void*);
+				maybe_network_stuff_init_decl maybe_network_stuff_init = reinterpret_cast<maybe_network_stuff_init_decl>(maybe_network_stuff_init_ptr);
+				maybe_network_stuff_init(*SCENE_CBattle_static_ptr);
+				WriteToProtectedMemory((uintptr_t)ptr_oldmem_1, oldmem_1, 2);
+				WriteToProtectedMemory((uintptr_t)ptr_oldmem_2, oldmem_2, 2);
+				WriteToProtectedMemory((uintptr_t)ptr_oldmem_3, oldmem_3, 6);
+				//memcpy(ptr_oldmem_1, oldmem_1, 2);
+			}
+
+
+			if (ImGui::Button("maybe_ggpo_start_session_with_SteamPeer2PeerBackend")) {
+				void* ggpo_start_session_ptr = base_addr + 0x37c7a0;
+				void* initialize_ggpo_callbacks_struct_ptr = base_addr + 0x383dd0;
+				void* maybe_session_init_idk_ptr = base_addr + 0x383750;
+				typedef int (*ggpo_start_session_decl)(unsigned char**, GGPOSessionCallbacks*, char*, int, int);
+				typedef void (*initialize_ggpo_callbacks_struct_decl)(GGPOSessionCallbacks*);
+				typedef void (*maybe_session_init_idk_decl)(void*);
+				ggpo_start_session_decl ggpo_start_session = reinterpret_cast<ggpo_start_session_decl>(ggpo_start_session_ptr);
+				initialize_ggpo_callbacks_struct_decl initialize_ggpo_callbacks_struct = reinterpret_cast<initialize_ggpo_callbacks_struct_decl>(initialize_ggpo_callbacks_struct_ptr);
+				maybe_session_init_idk_decl maybe_session_init_idk = reinterpret_cast<maybe_session_init_idk_decl>(maybe_session_init_idk_ptr);
+
+				GGPOSessionCallbacks* callbacks_ptr = new GGPOSessionCallbacks;
+				initialize_ggpo_callbacks_struct(callbacks_ptr);
+				//needs to be initialized with something else as the first argument, need to try and run the "maybe_session_init_idk"(base+383750) function instead of this one raw
+				ggpo_start_session((unsigned char**)addr, callbacks_ptr, "BBCF", 2, 2); // if run by itself the game freezes, doesnt crash, so prob is just waiting for the rest to be defined?
+				//ggpo_start_session((unsigned char**)addr, callbacks_ptr, "BBCF", 0, 2);
+				//maybe_session_init_idk((void*)(base_addr + 0x65bd08));
+				//need another one
+			}
+			if (ImGui::Button("maybe_network_stuff_init")) {
+				void** SCENE_CBattle_static_ptr = (void**)(base_addr + 0x8929B4);
+				void* maybe_network_stuff_init_ptr = base_addr + 0xe56f0;
+				typedef void (*maybe_network_stuff_init_decl)(void*);
+				maybe_network_stuff_init_decl maybe_network_stuff_init = reinterpret_cast<maybe_network_stuff_init_decl>(maybe_network_stuff_init_ptr);
+				maybe_network_stuff_init(*SCENE_CBattle_static_ptr);
+			}
+
+			//static unsigned char savedstate_mine[10][0xa10000];// = new unsigned char[0x8536f8];
+			static int* temp_savestate_loc = 0;
+			//static int sizeofstate = 0x8536f8;
+			static int sizeofstate = 0xa10000;
+			static int checksum = 0;
+			static int savegame_index = 0;
+			static int savegame_count = 0;
+			//ImGui::Text("static savedstate_mine addr: %x", &savedstate_mine);
+			//static unsigned char* ptr_savedstate_mine = (unsigned char*)&savedstate_mine;
+			//void* snapshot_manager
+			if (snap_manager) {
+				ImGui::Text("savegame_count: %d", savegame_count);
+				ImGui::Text("_counter_of_some_sort: %d", snap_manager->_counter_of_some_sort);
+				if (ImGui::Button("save_state_no_backend")) {
+
+
+					//callbacks_ptr->save_game_state((unsigned char**)&savedstate_mine[savegame_index], &sizeofstate, &checksum);
+
+					sizeofstate = 1;
+					unsigned char** pbuf = (unsigned char**)&snap_manager->_saved_states_related_struct[savegame_count % 10]._ptr_buf_saved_frame;
+					//callbacks_ptr->save_game_state(pbuf, 
+					//								&snap_manager->_counter_of_some_sort, 
+					//								&checksum);
+					callbacks_ptr->free_buffer(*pbuf);
+					callbacks_ptr->save_game_state(pbuf,
+						&sizeofstate,
+						&checksum);
+					savegame_index = (savegame_index + 1) % 10;
+					savegame_count += 1;
+
+
+				}
+				if (savegame_count == 0) {
+
+				}
+				if (ImGui::Button("load_state_no_backend")) {
+
+					//memcpy(&temp_savestate_loc, savedstate_mine[savegame_index], 4);
+					//callbacks_ptr->load_game_state((unsigned char*)temp_savestate_loc);
+					///PRELUDE
+					auto mem_offset_1 = 0x383f63;//3 bytes
+					void* ptr_oldmem_load = base_addr + mem_offset_1;
+					char nops[] = "\x90\x90\x90\x90\x90\x90\x90\x90";
+					char jmp_short_23[] = "\xEB\x23";
+					char oldmem_load[3];
+					memcpy(oldmem_load, ptr_oldmem_load, 3);
+					WriteToProtectedMemory((uintptr_t)ptr_oldmem_load, jmp_short_23, 2);
+					WriteToProtectedMemory((uintptr_t)ptr_oldmem_load + 2, nops, 1);
+					/// PRELUDE_END
+
+					unsigned char* buf = (unsigned char*)snap_manager->_saved_states_related_struct[(savegame_count - 1) % 10]._ptr_buf_saved_frame;
+					callbacks_ptr->load_game_state(buf);
+
+					///CLEANUP
+					WriteToProtectedMemory((uintptr_t)ptr_oldmem_load, oldmem_load, 3);
+					///CLEANUP_END
+
+
+				}
+			}
+			if (bckend) {
+				ImGui::Text("SteamPeer2PeerBackend addr: %x", bckend);
+				ImGui::Text("Sync addr: %x", &bckend->_sync);
+				if (ImGui::Button("ggpo_advance_frame")) {
+					bckend->_callbacks.advance_frame();
+				}
+
+				if (ImGui::TreeNode("Netcode details")) {
+					//btw chardata resides on buf + 0x623E10 for P1 and for p2 buf + 0x623E10 + 0x24978
+					if (&bckend->_sync) {
+						static bool save_continuously = false;
+						Sync__SavedState* saved_states = &bckend->_sync._savedstate;
+						if (ImGui::Button("save_frame_state")) {
+							//static byte** buf = &saved_states->frames[0].buf;
+							byte** buf = &saved_states->frames[0].buf;
+							saved_states->frames[0].cbuf = 0x8536f8;
+							//static int save_frame_state_cbuf_static = 0xa1000;
+							//static int save_frame_state_checksum_static = 0;
+							saved_states->frames[0].checksum = 0;
+							auto tst = bckend->_callbacks.save_game_state(buf, &saved_states->frames[0].cbuf, &saved_states->frames[0].checksum);
+							savegame_count += 1;
+						}
+
+						if (ImGui::Button("Load frames in rollback 2")) {
+							byte* buf = saved_states->frames[0].buf;
+							typedef int (*AssemblyFunction)(unsigned char*);
+							void* asmFunctionPtr = bckend->_callbacks.load_game_state;
+							auto tst = bckend->_callbacks.load_game_state(buf);
+							//AssemblyFunction asmFunction = reinterpret_cast<AssemblyFunction>(asmFunctionPtr);
+							//int (*asmFunction)(unsigned char*) = (int (*)(unsigned char*))(asmFunctionPtr);
+							//auto tst = asmFunction(buf);
+							//int(*fptr1)(unsigned char*) = bckend->_callbacks.load_game_state;
+							//int (*fptr1)(unsigned char*) bckend->_callbacks.load_game_state(buf);
+						}
+						for (int i = 0; i < 10; i++) {
+							Sync__SavedFrame state_save = saved_states->frames[i];
+							ImGui::Text("-------------------------");
+							ImGui::Text("buf addr: %x", state_save.buf);
+							ImGui::Text("cbuf: %d", state_save.cbuf);
+							ImGui::Text("frame: %d", state_save.frame);
+							ImGui::Text("checksum: %d", state_save.checksum);
+							ImGui::Text("-------------------------");
+						}
+					}
+					else {
+						ImGui::Text("must have bckend->_sync initialized");
+					}
+					ImGui::TreePop();
+				}
+			}
+			else {
+				ImGui::Text("must have SteamPeer2PeerBackend initialized");
+			}
+
+		
+
+			ImGui::TreePop();
+		
+		}
+		ImGui::TreePop();
+}
 	if (!ImGui::CollapsingHeader("Game values"))
 		return;
 
@@ -290,6 +531,9 @@ void DebugWindow::DrawGameValuesSection()
 
 	if (ImGui::TreeNode("Game and Match variables"))
 	{
+		ImGui::Text("adress static snapshot: 0x%x ", &snapshot_replay_pre_allocated);
+		ImGui::Text("sizeof chardata: 0x%d ", sizeof(CharData));
+		ImGui::Text("sizeof snapshot: 0x%d ", sizeof(Snapshot));
 		ImGui::Text("pGameState: 0x%p : %d", g_gameVals.pGameState, SafeDereferencePtr(g_gameVals.pGameState));
 		ImGui::Text("pGameMode: 0x%p : %d", g_gameVals.pGameMode, SafeDereferencePtr(g_gameVals.pGameMode));
 		ImGui::Text("pMatchState: 0x%p : %d", g_gameVals.pMatchState, SafeDereferencePtr(g_gameVals.pMatchState));
@@ -303,7 +547,7 @@ void DebugWindow::DrawGameValuesSection()
 		ImGui::Text("viewMatrix: 0x%p", g_gameVals.viewMatrix);
 		ImGui::Text("projMatrix: 0x%p", g_gameVals.projMatrix);
 		ImGui::Text("pRoom: 0x%p", g_gameVals.pRoom);
-		ImGui::Text("enableForeignPalettes: %d", g_gameVals.enableForeignPalettes);
+		ImGui::Text("enableForeignPalettes: %d", g_modVals.enableForeignPalettes);
 
 		ImGui::TreePop();
 	}

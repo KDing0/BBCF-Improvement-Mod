@@ -38,7 +38,7 @@ void OnlinePaletteManager::RecvPaletteDataPacket(Packet* packet)
 			m_unprocessedPaletteFiles.push(UnprocessedPaletteFile(matchPlayerIndex, (PaletteFile)packet->part, (char*)packet->data));
 			return;
 		}
-		if (g_gameVals.enableForeignPalettes) {
+		if (g_modVals.enableForeignPalettes) {
 			m_pPaletteManager->ReplacePaletteFile((const char*)packet->data, (PaletteFile)packet->part, charPalHandle);
 		}
 
@@ -57,7 +57,7 @@ void OnlinePaletteManager::RecvPaletteInfoPacket(Packet* packet)
 			m_unprocessedPaletteInfos.push(UnprocessedPaletteInfo(matchPlayerIndex, (IMPL_info_t*)packet->data));
 			return;
 		}
-		if (g_gameVals.enableForeignPalettes) {
+		if (g_modVals.enableForeignPalettes) {
 			m_pPaletteManager->SetCurrentPalInfo(charPalHandle, *(IMPL_info_t*)packet->data);
 		}
 	//}

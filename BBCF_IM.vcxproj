@@ -25,6 +25,7 @@
     <ClCompile Include="src\CBR\CharacterStorage.cpp" />
     <ClCompile Include="src\Hooks\hooks_cbr.cpp" />
     <ClCompile Include="src\Overlay\Window\CbrServerWindow.cpp" />
+    <ClCompile Include="src\Game\SnapshotApparatus\SnapshotApparatus.cpp" />
     <ClCompile Include="src\Overlay\Window\ComboDataWindow.cpp" />
     <ClCompile Include="src\Overlay\Window\FrameAdvantage\PlayerExtendedData.cpp" />
     <ClCompile Include="src\Game\Jonb\JonbDBReader.cpp" />
@@ -123,6 +124,8 @@
     <ClInclude Include="src\CBR\Helper.h" />
     <ClInclude Include="src\CBR\Metadata.h" />
     <ClInclude Include="src\Overlay\Window\CbrServerWindow.h" />
+    <ClInclude Include="src\Game\GhidraDefs.h" />
+    <ClInclude Include="src\Game\SnapshotApparatus\SnapshotApparatus.h" />
     <ClInclude Include="src\Overlay\Window\ComboDataWindow.h" />
     <ClInclude Include="src\Overlay\Window\FrameAdvantage\PlayerExtendedData.h" />
     <ClInclude Include="src\Game\Jonb\JonbDBEntry.h" />
