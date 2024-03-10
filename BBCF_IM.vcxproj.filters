@@ -155,6 +155,7 @@
     <ClCompile Include="src\Overlay\Window\PlaybackEditorWindow.cpp" />
     <ClCompile Include="src\Game\Jonb\JonbDBReader.cpp" />
     <ClCompile Include="src\Overlay\Window\FrameAdvantage\PlayerExtendedData.cpp" />
+    <ClCompile Include="src\Overlay\Window\ComboDataWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="depends\imgui\imgui.h" />
@@ -305,6 +306,7 @@
     <ClInclude Include="..\..\..\..\Downloads\stb_image.h" />
     <ClInclude Include="depends\imgui\stb_image.h" />
     <ClInclude Include="src\Overlay\Window\FrameAdvantage\PlayerExtendedData.h" />
+    <ClInclude Include="src\Overlay\Window\ComboDataWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="export\dinput8.def">

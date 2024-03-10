@@ -251,11 +251,13 @@ void WindowManager::Render()
 		m_windowContainer->GetWindow(WindowType_InputBufferP2)->IsOpen();
 	bool isPlaybackEditorWindowOpen =
 		m_windowContainer->GetWindow(WindowType_PlaybackEditor)->IsOpen();
+	bool isComboDataWindowOpen =
+		m_windowContainer->GetWindow(WindowType_ComboData)->IsOpen();
 
 	ImGui::GetIO().MouseDrawCursor = isMainWindowOpen || isLogWindowOpen || isPaletteEditorWindowOpen
 		|| isUpdateNotifierWindowOpen || isRoomWindowOpen || isDebugWindowOpen || 
 		isScrWindowOpen || isInputBufferP1WindowOpen || isInputBufferP2WindowOpen
-		|| isPlaybackEditorWindowOpen || isCbrServerWindowOpen;
+		|| isPlaybackEditorWindowOpen || isComboDataWindowOpen;
 
 	if (Settings::settingsIni.viewport == 2)
 	{

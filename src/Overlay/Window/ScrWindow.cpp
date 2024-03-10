@@ -48,8 +48,14 @@ void ScrWindow::Draw()
     DrawVeryExperimentalSection2();
     DrawRoomSection();
     DrawInputBufferButton();
+    DrawComboDataButton();
 }
-
+void ScrWindow::DrawComboDataButton() {
+    if (ImGui::Button("Combo Data"))
+    {
+        ScrWindow::m_pWindowContainer->GetWindow(WindowType_ComboData)->ToggleOpen();
+    }
+}
 void ScrWindow::DrawInputBufferButton() {
     if (ImGui::Button("Input Buffer P1"))
     {
@@ -178,7 +184,7 @@ void ScrWindow::DrawGenericOptionsSection() {
         if (check_enable_wakeup_delay) {
             DrawWakeupDelayControl();
             check_wakeup_delay();
-        }
+        } 
     }
 }
 void ScrWindow::swap_character_coordinates() {
@@ -355,7 +361,9 @@ void ScrWindow::DrawStatesSection()
                 ImGuiStyle& style = ImGui::GetStyle();
                 int after_non_deterministic = 0;
                 for (auto& frame_activity : selected_state->frame_activity_status) {
-
+                    if (iter_scr_frames > 500) {//needed to limit the amount of drawn frames to keep it from crashing on way too long states(rp based probably/too many branches prob)
+                        ImGui::Text("+ Too long to show all"); 
+                        break; }
 
 
                     auto color = IM_COL32(0, 255, 255, 255);
@@ -1017,8 +1025,8 @@ void ScrWindow::draw_playback_slot_section(int slot) {
         slot_onhit = 0;
         slot_throwtech = 0;
     }
-    ImGui::InputInt("Buffer frames", &slot_buffer[0]);
-    ImGui::TextWrapped("Buffer frames only works currently with non random wakeup actions");
+    ImGui::InputInt("Buffer frames", &slot_buffer[slot-1]);
+    ImGui::TextWrapped("Buffer frames only works currently with wakeup actions");
     ImGui::Separator();
     auto old_val = 0; auto frame_counter = 0;
     for (auto el : slot_recording_frames) {
@@ -1119,7 +1127,7 @@ void ScrWindow::DrawPlaybackSection() {
 
 
 
-            
+
             //does gap action for recorded slot
             //can optimize later by checking for same memory address
             std::string current_action = g_interfaces.player2.GetData()->currentAction;
@@ -1135,11 +1143,11 @@ void ScrWindow::DrawPlaybackSection() {
 
 
             //checking for gap action
-            ///std::string substr = "GuardEnd";
+///std::string substr = "GuardEnd";
             auto gap_action_trigger_find = current_action.find("Guard");
-            if (random_gap_slot_toggle && !random_gap.empty() 
-                 &&  g_interfaces.player2.GetData()->blockstun == 1
-               
+            if (random_gap_slot_toggle && !random_gap.empty()
+                && g_interfaces.player2.GetData()->blockstun == 1
+
                 && gap_action_trigger_find != std::string::npos) {
                 //does randomized
                 int rand = std::rand();
@@ -1150,9 +1158,9 @@ void ScrWindow::DrawPlaybackSection() {
 
             }
             else if //(slot_gap != 0 && gap_action_trigger_find != std::string::npos
-            (slot_gap != 0 && g_interfaces.player2.GetData()->blockstun == 1
-                &&
-                gap_action_trigger_find  != std::string::npos) {
+                (slot_gap != 0 && g_interfaces.player2.GetData()->blockstun == 1
+                    &&
+                    gap_action_trigger_find != std::string::npos) {
                 //does pre-defined
                 slot = slot_gap - 1;
                 memcpy(active_slot, &slot, 4);
@@ -1169,14 +1177,14 @@ void ScrWindow::DrawPlaybackSection() {
             }
 
             auto onhit_action_trigger_find = [&]()-> size_t {
-                for (auto& el : std::vector<std::string>{ "CmnActHit", "CmnActBDown", "CmnActFDown", "CmnActVDown", "CmnActStaggerLoop"}) {
+                for (auto& el : std::vector<std::string>{ "CmnActHit", "CmnActBDown", "CmnActFDown", "CmnActVDown", "CmnActStaggerLoop", "CmnActSlideAir" , "CmnActSkeleton", "CmnActBlowoff"}) {
                     if (current_action.find(el) != std::string::npos) {
                         return current_action.find(el);
                     }
                 };
-                return std::string::npos; 
+                return std::string::npos;
             }();
-           //auto onhit_action_trigger_find = current_action.find("CmnActHit");
+            //auto onhit_action_trigger_find = current_action.find("CmnActHit");
             if (slot_onhit != 0 && g_interfaces.player2.GetData()->hitstun > 0 && onhit_action_trigger_find != std::string::npos) {
                 slot = slot_onhit - 1;
                 memcpy(active_slot, &slot, 4);
@@ -1184,7 +1192,7 @@ void ScrWindow::DrawPlaybackSection() {
             }
 
             auto throwtech__action_trigger_find = current_action.find("LockReject");
-            if (slot_throwtech != 0 && g_interfaces.player2.GetData()->timeAfterTechIsPerformed == 29 && throwtech__action_trigger_find != std::string::npos){
+            if (slot_throwtech != 0 && g_interfaces.player2.GetData()->timeAfterTechIsPerformed == 29 && throwtech__action_trigger_find != std::string::npos) {
                 slot = slot_throwtech - 1;
                 memcpy(active_slot, &slot, 4);
                 memcpy(playback_control_ptr, &val_set, 2);
@@ -1199,62 +1207,114 @@ void ScrWindow::DrawPlaybackSection() {
             //                {"ActBDownDown", 20}, //lasts 20 frames
             //                {"ActWallBoundDown", 15}
             //}; //lasts 15 frames
-            static std::vector<std::tuple<std::string, int>> wakeup_buffer_actions{ 
+            static std::vector<std::tuple<std::string, int>> wakeup_buffer_actions{
                 {"ActUkemiLandN",30 } ,
                 {"ActUkemiLandF",30 },
                 {"ActUkemiLandB",30 },
             {"ActFDown2Stand", 14},
-            {"ActBDown2Stand", 14} 
-        };
-            
-            //checks if 
+            {"ActBDown2Stand", 14}
+            };
 
- 
+         
+
             static int base_frame_count_triggered = 0; // hold the pFrameCount a certain action started
-            static int frame_count_to_activate = 0; // will start the recording when pFrameCount reaches this number
+            static int slot_to_run = 0; 
+            static std::vector<int> frame_count_to_activate_vector = { 0,0,0,0 }; // will start the recording when pFrameCount reaches this number for each slot
             static std::string prev_action;
+            //static std::map<std::string, int> slot_frame_count_to_activate_map = {;
             //will run buffered for non random wakeup slot
-            if (slot_wakeup != 0 || !random_wakeup.empty()){// && slot_buffer[slot_wakeup - 1] != 0) {
+            if (slot_wakeup != 0 || !random_wakeup.empty()) {// && slot_buffer[slot_wakeup - 1] != 0) {
                 if (prev_action != current_action) {
                     //sets the internal frame count to trigger shit
+                    //int iter = 0;
+
                     for (auto pair : wakeup_buffer_actions) {
                         if (base_frame_count_triggered == 0 && current_action.find(std::get<0>(pair)) != std::string::npos) {
-                            //auto tst = current_action.find(std::get<0>(pair));
-                            auto buffer = 0;
-                            if (random_wakeup_slot_toggle && !random_wakeup.empty()) { buffer = 0; }//disable buffer if it is a random action
-                            else { buffer= slot_buffer[slot_wakeup - 1]; }
-                            base_frame_count_triggered = *g_gameVals.pFrameCount;
-                            frame_count_to_activate = base_frame_count_triggered + std::get<1>(pair) - buffer; //sets the frame count to activate to base + (len of action- buffer)
-                            break;
+                            for (int iter = 0; iter < 4; iter++) {
+                              
+                                auto buffer = 0;
+                               
+                                buffer = slot_buffer[iter];
+                                base_frame_count_triggered = *g_gameVals.pFrameCount;
+                             
+                                frame_count_to_activate_vector[iter] = base_frame_count_triggered + std::get<1>(pair) - buffer; //sets the frame count to activate to base + (len of action- buffer)
+                               
+                                if (random_wakeup_slot_toggle && !random_wakeup.empty()) {
+                                    int frame_count_tmp = std::rand() % random_wakeup.size(); //actually the slot that should be used for the next random slot
+                                    slot_to_run = random_wakeup[frame_count_tmp] - 1;
+                                }
+                                else {
+                                    slot_to_run = slot_wakeup-1;
+                                }
+                                
+                            }
+
+
                         }
-                        
-                        
                     }
-                    if (frame_count_to_activate < *g_gameVals.pFrameCount || base_frame_count_triggered > *g_gameVals.pFrameCount) { //sanity check
-                        base_frame_count_triggered = 0;
-                        frame_count_to_activate = 0;
+                    for (auto& frame_count : frame_count_to_activate_vector) {
+                        if (frame_count < *g_gameVals.pFrameCount || base_frame_count_triggered > *g_gameVals.pFrameCount) { //sanity check
+                            base_frame_count_triggered = 0;
+                            frame_count = 0;
+                        }
                     }
 
+
                 }
-                if (frame_count_to_activate !=0 && *g_gameVals.pFrameCount == frame_count_to_activate) {
-                    //checks if there is a random slot, for now if its set to random the buffer is not individual to every single random action, still need to implement this.
-                    if (random_wakeup_slot_toggle && !random_wakeup.empty()) {
-                        int random_pos = std::rand() % random_wakeup.size();
-                        slot = random_wakeup[random_pos] - 1;
+                //for (auto& frame_count : frame_count_to_activate_vector) {
+                if (random_wakeup_slot_toggle && !random_wakeup.empty()) {
+                    if (frame_count_to_activate_vector.size() >= slot_to_run) {
+                        int frame_count = frame_count_to_activate_vector[slot_to_run];
+
+                        if (frame_count != 0 && *g_gameVals.pFrameCount == frame_count) {
+                            //checks if there is a random slot, for now if its set to random the buffer is not individual to every single random action, still need to implement this.
+                            if (random_wakeup_slot_toggle && !random_wakeup.empty()) {
+
+                          
+                                slot = slot_to_run + 1; //slot_to_run has the value already adjusted for 0 start, need to add 1 so that it becomes 1,2,3,4 as set_active_slot expects.
+                                if (*playback_control_ptr != 3) {
+                                    PlaybackManager().set_active_slot(slot);
+                                    PlaybackManager().set_playback_control(val_set);
+                                    //memcpy(active_slot, &slot, 4);
+                                    //memcpy(playback_control_ptr, &val_set, 2);
+                                    // if not in listed states reset the internal frame counts
+                                    base_frame_count_triggered = 0;
+                                    slot_to_run = 0;
+                                    //frame_count_to_activate = 0;
+                                    frame_count_to_activate_vector[0] = 0;
+                                    frame_count_to_activate_vector[1] = 0;
+                                    frame_count_to_activate_vector[2] = 0;
+                                    frame_count_to_activate_vector[3] = 0;
+                                }
+                            }
+                        }
                     }
-                    else {
-                        slot = slot_wakeup - 1;
+                }
+                else if (frame_count_to_activate_vector[slot_to_run] != 0 && *g_gameVals.pFrameCount == frame_count_to_activate_vector[slot_to_run]) {
+
+                    slot = slot_to_run+ 1; //slot_to_run has the value already adjusted for 0 start, need to add 1 so that it becomes 1,2,3,4 as set_active_slot expects.
+
+              
+                    if (*playback_control_ptr != 3) {
+                        PlaybackManager().set_active_slot(slot);
+                        PlaybackManager().set_playback_control(val_set);
+                        //memcpy(active_slot, &slot, 4);
+                       // memcpy(playback_control_ptr, &val_set, 2);
+                        // if not in listed states reset the internal frame counts
+                        base_frame_count_triggered = 0;
+                        slot_to_run = 0;
+                        //frame_count_to_activate = 0;
+                        frame_count_to_activate_vector[0] = 0;
+                        frame_count_to_activate_vector[1] = 0;
+                        frame_count_to_activate_vector[2] = 0;
+                        frame_count_to_activate_vector[3] = 0;
                     }
-                    memcpy(active_slot, &slot, 4);
-                    memcpy(playback_control_ptr, &val_set, 2);
-                    // if not in listed states reset the internal frame counts
-                    base_frame_count_triggered = 0;
-                    frame_count_to_activate = 0;
+
+                
+
                 }
             }
-
-
-
+            
 
             /* OLD CODE FOR WAKEUP ACTION, JUST LEAVING FOR REFERENCE FOR SOMETHING IM DOING
             //checking for wakeup action
@@ -1743,7 +1803,9 @@ void ScrWindow::DrawVeryExperimentalSection2() {
     if (!ImGui::CollapsingHeader("Replay takeover/save states::experimental"))
         return;
     ImGui::Text("time: %d", *g_gameVals.pMatchTimer);
-    if (ImGui::Button("save state")) {
+    if (ImGui::Button("save state")
+          || ImGui::IsKeyPressed(119)
+        ) {
         if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
             framestate = std::make_unique<FrameState>(FrameState());
             state.p1 = *g_interfaces.player1.GetData();
@@ -1784,7 +1846,9 @@ void ScrWindow::DrawVeryExperimentalSection2() {
         }
 
     }
-    if (ImGui::Button("load state")) {
+    if (ImGui::Button("load state")
+        || ImGui::IsKeyPressed(120)
+        ) {
         if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
             if (g_gameVals.isP1CPU) {
                 auto p1 = g_interfaces.player1.GetData();

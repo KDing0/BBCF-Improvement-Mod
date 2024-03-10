@@ -13,6 +13,7 @@
 #include "Overlay/Window/ScrWindow.h"
 #include "Overlay/Window/InputBufferWindow.h"
 #include "Overlay/Window/PlaybackEditorWindow.h"
+#include "Overlay/Window/ComboDataWindow.h"
 
 #include "Core/info.h"
 #include "Core/logger.h"
@@ -57,4 +58,7 @@ WindowContainer::WindowContainer()
 
 	AddWindow(WindowType_PlaybackEditor,
 		new PlaybackEditorWindow("Playback Editor", true));
+
+	AddWindow(WindowType_ComboData,
+		new ComboDataWindow("Combo Data", true, ImGuiWindowFlags_AlwaysAutoResize));
 }

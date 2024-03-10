@@ -32,6 +32,7 @@ private:
 	void DrawWakeupDelayControl();
 	void DrawInputBufferButton();
 	void DrawPlaybackEditor();
+	void DrawComboDataButton();
 	PlaybackManager playback_manager;
 	bool m_showDemoWindow = false;
 	void* p2_old_char_data = NULL;

@@ -29,6 +29,7 @@ public:
 	int32_t actionTime2; //0x0164
 	char pad_0168[8]; //0x0168
 	int32_t actionTimeNoHitstop; //0x0170
+
 	char pad_0174[8]; //0x0174
 	int32_t EsBuff; //0x17C
 	char pad_0180[32]; //0x0180
@@ -54,6 +55,7 @@ public:
 		int32_t SLOT_62; //0x01AC//bang seal /lambda_nu_drive_hitcount
 
 	*/
+
 	char pad_01B0[16]; //0x01B0
 	int32_t overdriveTimeleft; //0x01C0
 	int32_t overdriveTimerStartedAt; //0x01C4
@@ -376,6 +378,7 @@ public:
 	int32_t Drive3; //0x20154 //Iza bit cooldown //kokoTrapAvailable
 	char pad_20158[4972]; //0x20158
 
+
 }; //Size: 0x214C4
 
 /*
@@ -565,5 +568,5 @@ public:
 	char pad_20134[32]; //0x20134
 	int32_t Drive3; //0x20154 //Iza bit cooldown //kokoTrapAvailable
 	char pad_20158[4972]; //0x20158
-}; //Size: 0x214C4 */
-//211C
+}; Size: 0x214C4 !actual size seems to be 0x24978 */
+
