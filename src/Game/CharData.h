@@ -31,35 +31,24 @@ public:
 	int32_t actionTimeNoHitstop; //0x0170
 
 	char pad_0174[8]; //0x0174
-	int32_t EsBuff; //0x17C
-	char pad_0180[32]; //0x0180
-	int32_t Drive10; //0x1A0 //azrael fireball /Plat item type//bang seal
-	int32_t Drive20; //0x1A4 //bang seal
-	int32_t Drive30; //0x1A8 ////bang seal
-	int32_t lambda_nu_drive_hitcount; //0x01AC//bang seal
-	/*
-	to double check, just note.
-		char pad_0174[8]; //0x0174
-		int32_t SLOT_31; //0x17C //EsBuff
-		int32_t SLOT_51; //0x0180 //bang kite float time
-		int32_t SLOT_52; //0x0184
-		int32_t SLOT_53; //0x0188
-		int32_t SLOT_54; //0x018C
-		int32_t SLOT_55; //0x0190
-		int32_t SLOT_56; //0x0194
-		int32_t SLOT_57; //0x0198
-		int32_t SLOT_58; //0x019C
-		int32_t SLOT_59; //0x1A0 //bang seal //azrael fireball /Plat item type
-		int32_t SLOT_60; //0x1A4 //bang seal
-		int32_t SLOT_61; //0x1A8 //bang seal
-		int32_t SLOT_62; //0x01AC//bang seal /lambda_nu_drive_hitcount
-
-	*/
+	int32_t SLOT_31; //0x17C //EsBuff
+ 	int32_t SLOT_51; //0x0180 //bang kite float time
+ 	int32_t SLOT_52; //0x0184
+ 	int32_t SLOT_53; //0x0188
+ 	int32_t SLOT_54; //0x018C
+ 	int32_t SLOT_55; //0x0190
+ 	int32_t SLOT_56; //0x0194
+ 	int32_t SLOT_57; //0x0198
+ 	int32_t SLOT_58; //0x019C
+	int32_t SLOT_59; //0x1A0 //bang seal //azrael fireball /Plat item type //Drive10
+	int32_t SLOT_60; //0x1A4 //bang seal //Drive20
+	int32_t SLOT_61; //0x1A8 //bang seal //Drive30
+	int32_t SLOT_62; //0x01AC//bang seal /lambda_nu_drive_hitcount
 
 	char pad_01B0[16]; //0x01B0
 	int32_t overdriveTimeleft; //0x01C0
 	int32_t overdriveTimerStartedAt; //0x01C4
-	char pad_01C8[12]; //0x01C8
+	char pad_01C8[20]; //0x01C8
 	int32_t moveSuperflashTime; //0x01D4
 	char pad_01D8[4]; //0x01D8
 	int32_t superflashTime; //0x01DC
@@ -69,19 +58,21 @@ public:
 	char pad_01E4[4]; //0x01E4
 	class CharData* ownerEntity; //0x01E8
 
-
+//exp
 	char pad_01EC[4];
 	class CharData* enemyChar; //0x01F0 dont know exactly what it is yet, just that it is checked and I need to save it 
-	char pad_01F4[54]; //0x01F4 
+	char pad_01F4[54]; //0x01F4 maybe this should be 56?
 	//char pad_01EC[64];
 	class CharData* last_child_entity_spawned; // 0x022C 
 	class CharData* extra_child_entities[7]; // 0x0230 should hold up to 7(?) idk extra child entities
 	class CharData* main_child_entity; // 0x024C holds the main child entity, varies by character but its the puppets, arakune curse circle over enemy, etc. Some characters dont have it
-	char pad_0250[20]; // 0x0250
-
+	//char pad_0250[20]; // 0x0250
+	char pad_0250[0xC];// 0x0250
 	//0x0254 significant?
-	//exp 
-
+	uint32_t bitflags_for_curr_state_properties_or_smth; // 0x025c holds some properties of attacks it seems in something like bitfields. To check for inactive hitboxes from multihits use the mask xxxxx400.
+	char pad_0260[4];//0x0260
+	
+//exp 
 	int32_t facingLeft; //0x0264 is it not facing right?
 	int32_t position_x; //0x0268
 	int32_t position_y; //0x026C
@@ -95,8 +86,7 @@ public:
 	char pad_028C[80]; //0x028C
 	int32_t position_x_dupe; //0x02DC
 	int32_t position_y_dupe; //0x02E0
-	int32_t position_x3;//0x02E4
-	char pad_02E4[12]; //0x02E8
+	char pad_02E4[16]; //0x02E4
 	int32_t offsetX_2; //0x02F4
 	char pad_02F8[4]; //0x02F8
 	int32_t offsetY_2; //0x02FC
@@ -154,17 +144,18 @@ public:
 	int64_t currentSprite; // 0x01338 the name of the current sprite
 	char pad_1340[3252]; //0x01340
 	char lastAction[32]; //0x1FF4
-	//char pad_2008[12]; //0x2008 
-	char currentActionNoNeutral[32]; //0x2014
-	char pad_2034[12]; //0x2034 
+	//char pad_2008[12]; //0x2008
+	char current_action2[20];//0x2014 another current action I guess, gets set by the set_action_override
+	char pad_2028[24]; //0x2028
 	char set_action_override[20]; //0x2040 this sets the current action overriding the script order I guess? not sure, still need more testing
 	char pad_2054[28]; //0x2054
-	char currentAction[32]; //0x2070
-	char pad_2090[232]; //0x2090
-	int32_t TagerMagnetism; //0x2178
-	char pad_217C[204];  //0x217C
+	char currentAction[20]; //0x2070
+	char pad_2084[452]; //0x2084
 	char char_abbr[4]; //0x2248
-	char pad_224C[40]; //0x224C
+	//char pad_224C[40]; //0x224C
+	char pad_224C[20]; //0x224C
+	int facingLeft2; //0x2260 used for checking if playback should flip side or not?
+	char pad2264[16];//0x2264
 
 	//thanks to kding0
 	int32_t blockstun; //0x2274
@@ -195,14 +186,6 @@ public:
 	char sameMoveProrationStack[32]; //0x581C; idk how long the stack is but it's pretty long lmao
 	char pad_583C[664]; //0x583C
 
-
-
-
-
-
-
-
-
 	int32_t heatMeter; //0x5AD4
 	char pad_5AD8[4]; //0x5AD8
 	int32_t heatGainCooldown; //0x5ADC
@@ -215,10 +198,8 @@ public:
 	//char pad_5B08[102072]; //0x5b08
 	char pad_5B08[10364]; //0x5b08
 
-
 	int32_t SLOT_unknown1; //0x8384 // Izanami float (0 or 1), possibly other stuff
 	char pad_8388[91156]; //0x8388
-
 
 	/*input buffers*/
 	char L_input_buffer_flag_base; //0x1e79c
@@ -287,7 +268,7 @@ public:
 	int8_t buffer_L_236_5f; //0x1E8A4, +108 236 within 5 frames of input valid, for mai's enhanced thrust
 	int8_t buffer_L_214_5f; //0x1E8A5, +109 214 for mai backflip idk why its special
 
-
+	
 	char R_input_buffer_flag_base; //0x1E8A6
 	/*input buffer for Right side, size=0x10A this will skip all the non motion inputs for now*/
 	char pad_1E8A7[0xAB];//0x1E8A7 the "non-special" inputs should be here, they should be duplicated maybe?
@@ -358,7 +339,7 @@ public:
 	//char pad_1E9B0[5980];//0x1E9B0
 
 	/*MOTION INPUT BUFFERS SHOULD END AT 0x1E9B0*/
-	int32_t Drive12; //0x1e9c0 //ReliusDollState /SusanUnlocks //izaFloatingTime //nineMagicSlots //izayoiStance
+	int32_t slot2_or_slot4; //0x1E9C0 referring to the scr SLOTs, naoto only for now until i figure out more about this shit !!! this is actually the buffer for dash//Drive12; //0x1e9c0 //ReliusDollState /SusanUnlocks //izaFloatingTime //nineMagicSlots //izayoiStance
 	int32_t Drive11; //0x1e9c4 //BulletHeatLevel //PlatNextItemType //SusanDrivePosition //nineMagicSlotsBackup //KokoGravState
 	int32_t UnknownDriveVal0;//0x1e9c8 //izaRibcage
 	int32_t UnknownDriveVal1;//0x1e9cc //IzaBitStance
@@ -380,6 +361,5 @@ public:
 
 
 }; //Size: 0x214C4
-
 
 
