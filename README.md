@@ -1,18 +1,14 @@
-# BBCF-Improvement-Mod
-Additional features and tweaks for BlazBlue Centralfiction
-
-The goal is to extend the game with community-created content and provide additional graphical options.
+# BBCF-Improvement-Mod AI edition
+This version of the BBCF Improvement mod adds an experimental AI that can learn from players and be used for a variety of training practices.
+For a quick overview look at the video here: https://www.youtube.com/watch?v=KVmEPF0cRQI 
 
 Join the [BB Improvement Mod Discord Server](https://discord.gg/j2mCX9s) to discuss about the development and the game itself!
 
-## What this mod provides
-- Adds extra game modes
-- Adds hitbox overlay
-- Create and load custom palettes and effects without file modifications
-- See each other's custom palettes in online matches
-- More flexibility to change the graphics options
-- Change avatars and accessories in online rooms/lobbies without going back into menu
-- Freely adjustable ingame currency value
+## What you can do with the AI system:
+- Have it learn from you and your opponents while you play online, to create AI copies of your opponents.
+- You can play against these AI opponents in training mode to practice against them. This allows you to practice matchups player and character matchups at your leisure.
+- You can record your own actions in training mode to create AI bots that an be used for specific training scenarios, allowing for specialized practice.
+- You can share your AI data in a global server, allowing you to easily access specialized training bots (assuming people in the community create and share these bots)
 
 ## Compiling and usage
 BBCF Improvement Mod is coded using Visual Studio 2019 (toolset v142). <br>
@@ -28,6 +24,8 @@ Copy the compiled binary, settings.ini, and palettes.ini files from the bin/ fol
 * Rouzel
 * Dormin
 * NeoStrayCat
+* Microsoft Excel/libreofficecalc
+* PC_volt
 * Everybody in the BlazBlue PC community that has given support or feedback of any kind!
 
 ## Extra thanks to
@@ -43,5 +41,5 @@ BBCF Improvement Mod is NOT intended to unlock unreleased / unpurchased contents
 BBCF Improvement Mod should only be used on the official version that you legally purchased and own.
 
 Use BBCF Improvement Mod at your own risk.
-I, GrimFlash, am not responsible for what happens while using BBCF Improvement Mod. You take full reponsibility for any outcome that happens to you while using this application.
+I, KDing, am not responsible for what happens while using BBCF Improvement Mod. You take full reponsibility for any outcome that happens to you while using this application.
 ```
