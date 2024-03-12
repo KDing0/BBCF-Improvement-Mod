@@ -10,6 +10,11 @@ Join the [BB Improvement Mod Discord Server](https://discord.gg/j2mCX9s) to disc
 - You can record your own actions in training mode to create AI bots that an be used for specific training scenarios, allowing for specialized practice.
 - You can share your AI data in a global server, allowing you to easily access specialized training bots (assuming people in the community create and share these bots)
 
+## Install:
+Two versions available, the standalone version and a version that merges the AI with the features from:
+https://github.com/libreofficecalc/BBCF-Improvement-Mod
+Download whichever version you prefer (the libre version has far more features, in case you don't know the difference) and unpack all files in the .zip folder where the BBCF.exe is located.
+
 ## Detailed Guide:
 
 ### Main Menu Window:
