@@ -1,6 +1,6 @@
 #pragma once
 
-#define MOD_VERSION "v1.0000"
+#define MOD_VERSION "v3.091"
 #define MOD_VERSION_NUM	MOD_VERSION " AI edition"
 #define MOD_WINDOW_TITLE "BBCF Improvement Mod AI"
 
