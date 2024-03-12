@@ -1005,7 +1005,7 @@ void MainWindow::DrawReversalSection() const
 			g_interfaces.cbrInterface.reversalBuffer.push_back(1);
 		}
 	}
-	ImGui::PopID();
+	ImGui::PopID();/*
 	if (!g_interfaces.player1.IsCharDataNullPtr() && !g_interfaces.player2.IsCharDataNullPtr()) {
 		
 		ImGui::Text("isDoingDistortion %d", g_interfaces.player1.GetData()->isDoingDistortion);
@@ -1048,7 +1048,7 @@ void MainWindow::DrawReversalSection() const
 		ImGui::Text("SLOT_60 %d", g_interfaces.player1.GetData()->SLOT_60);
 		ImGui::Text("SLOT_61 %d", g_interfaces.player1.GetData()->SLOT_61);
 		ImGui::Text("SLOT_62 %d", g_interfaces.player1.GetData()->SLOT_62);
-	}
+	}*/
 	
 		
 		
