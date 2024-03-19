@@ -1,6 +1,6 @@
 # BBCF-Improvement-Mod AI edition
 This version of the BBCF Improvement mod adds an experimental AI that can learn from players and be used for a variety of training practices.
-For a quick overview look at the video here: https://www.youtube.com/watch?v=KVmEPF0cRQI 
+For a quick overview look at the video here: https://www.youtube.com/watch?v=KVmEPF0cRQI ](https://youtu.be/74DYdpBzIOs)
 
 Join the [BB Improvement Mod Discord Server](https://discord.gg/j2mCX9s) to discuss about the development and the game itself!
 
