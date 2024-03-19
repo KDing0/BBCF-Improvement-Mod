@@ -1,21 +1,18 @@
 #pragma once
 #include "Game/GhidraDefs.h"
 #include "Core/Interfaces.h"
-#define SNAPSHOT_PREALLOC_SIZE  10
+#define SNAPSHOT_PREALLOC_SIZE  1
 
 class Snapshot {
 public:
-	char padding[0xa10000];
-	/*char padding[0x623e0C];
-	CharData p1_chardata_training_;
-	CharData p2_chardata_training_;
-	char padding_after[0x3a2f00];*/
+	char padding[0xa10000]; 
 	//btw chardata resides on buf + 0x623E10 for P1 and for p2 buf + 0x623E10 + 0x24978 for training mode THIS IS NOT TRUE, SEEMS TO CHANGE
 	
 };
 
-static Snapshot snapshot_replay_pre_allocated[SNAPSHOT_PREALLOC_SIZE]; //keeping this with only one element for now while its not used for any implementation to save space
-
+//!!!!!!!!!!!!Uncomment this later(and all the functions related to it) when I go back to working on rewind!!!! leaving out for possible crash reasons
+//static Snapshot snapshot_replay_pre_allocated[SNAPSHOT_PREALLOC_SIZE]; //keeping this with only one element for now while its not used for any implementation to save space
+//!!!!!!!!!!!!!!!!
 
 
 class SnapshotApparatus {

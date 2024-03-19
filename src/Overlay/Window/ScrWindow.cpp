@@ -46,7 +46,11 @@ void ScrWindow::Draw()
     DrawPlaybackSection();
     DrawSaveStates();
     DrawReplayTheaterSection();
+#ifdef _DEBUG
     DrawReplayRewind();
+#endif // !DEBUG
+
+    
     
     DrawReplayTakeover();
     DrawRoomSection();
@@ -2149,9 +2153,9 @@ void ScrWindow::DrawReplayTakeover() {
         ImGui::ShowHelpMarker("This pauses the game once you load a state for the amount set in order to adjust hand position. Set to 0 if no delay is desired.");
         if (is_setup_time_running == true) {
             this->base_time -= ImGui::GetIO().DeltaTime;
-            ImGui::OpenPopup("progress_bar");
+            ImGui::OpenPopup("progress_bar_replay_takeover");
             ImGui::SetNextWindowSize(ImVec2(400, 50)); 
-            if (ImGui::BeginPopupModal("progress_bar", NULL, ImGuiWindowFlags_NoTitleBar)) {
+            if (ImGui::BeginPopupModal("progress_bar_replay_takeover", NULL, ImGuiWindowFlags_NoTitleBar)) {
 
                 float progress = this->base_time / (wait_before_exec_s2);
                 ImGui::ProgressBar(progress);

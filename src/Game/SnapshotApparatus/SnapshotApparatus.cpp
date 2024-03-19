@@ -101,6 +101,7 @@ bool SnapshotApparatus::save_snapshot(Snapshot** pbuf_mine)
 }
 bool SnapshotApparatus::save_snapshot_prealloc()
 {
+	return false;
 	char* base_addr = GetBbcfBaseAdress();
 	//memcpy(&temp_savestate_loc, savedstate_mine[savegame_index], 4);
 	//callbacks_ptr->load_game_state((unsigned char*)temp_savestate_loc);
@@ -125,10 +126,10 @@ bool SnapshotApparatus::save_snapshot_prealloc()
 	this->callbacks_ptr->save_game_state((unsigned char**)pbuf,
 		&sizeofstate, //&counter_of_some_sort, I still dont know for sure if this is supposed to be the counter or the sie 
 		&checksum); //I assume this is supposed to be checksum but idk
-	
-	void* pbuf_mine = &snapshot_replay_pre_allocated[this->snapshot_count % SNAPSHOT_PREALLOC_SIZE];
-	this->snapshot_count += 1;
-	memcpy(pbuf_mine, *pbuf, 0xa10000);
+	//!!!!UNCOMMENT LATER WHEN STATIC EXISTS
+	//void* pbuf_mine = &snapshot_replay_pre_allocated[this->snapshot_count % SNAPSHOT_PREALLOC_SIZE];
+	//this->snapshot_count += 1;
+	//memcpy(pbuf_mine, *pbuf, 0xa10000);
 
 	return true;
 }
@@ -180,6 +181,7 @@ bool SnapshotApparatus::load_snapshot(Snapshot* buf)
 }
 bool SnapshotApparatus::load_snapshot_prealloc(int index)
 {
+	return false;
 	/* leave buf as zero to not involve our own buffers and just the "built in" snapshot buffer of 10*/
 	char* base_addr = GetBbcfBaseAdress();
 
@@ -195,10 +197,11 @@ bool SnapshotApparatus::load_snapshot_prealloc(int index)
 		return false;
 	}
 	unsigned char* dest_buf = (unsigned char*)snap_manager->_saved_states_related_struct[(snapshot_count - 1) % 10]._ptr_buf_saved_frame;
-	void* buf = &snapshot_replay_pre_allocated[index % SNAPSHOT_PREALLOC_SIZE];
-	if (buf != 0) {
-		memcpy(dest_buf, buf, 0xA10000);
-	}
+	//!!!!UNCOMMENT LATER WHEN STATIC EXISTS
+	//void* buf = &snapshot_replay_pre_allocated[index % SNAPSHOT_PREALLOC_SIZE];
+	//if (buf != 0) {
+	//	memcpy(dest_buf, buf, 0xA10000);
+	//}
 
 	/// COPIES_FROM_OUR_BUFFER_TO_FIRST_ROLLBACK_SLOT_END
 	///PRELUDE
