@@ -1,11 +1,11 @@
 #pragma once
 
-#define MOD_VERSION "v3.091"
+#define MOD_VERSION "v1.000"
 #define MOD_VERSION_NUM	MOD_VERSION " AI edition"
 #define MOD_WINDOW_TITLE "BBCF Improvement Mod AI"
 
 
-#define MOD_FORCE_DISABLE_UPDATE_CHECK 0
+#define MOD_FORCE_DISABLE_UPDATE_CHECK 1
 
 // Links
 #define MOD_LINK_DISCORD L"https://discord.gg/j2mCX9s"
