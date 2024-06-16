@@ -14,5 +14,6 @@ enum WindowType_
 	WindowType_InputBufferP1,
 	WindowType_InputBufferP2,
 	WindowType_PlaybackEditor,
-	WindowType_ComboData
+	WindowType_ComboData,
+	WindowType_ReplayDBPopup
 };

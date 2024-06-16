@@ -14,6 +14,7 @@
 #include "Overlay/Window/InputBufferWindow.h"
 #include "Overlay/Window/PlaybackEditorWindow.h"
 #include "Overlay/Window/ComboDataWindow.h"
+#include "Overlay/Window/ReplayDBPopupWindow.h" 
 
 #include "Core/info.h"
 #include "Core/logger.h"
@@ -61,4 +62,7 @@ WindowContainer::WindowContainer()
 
 	AddWindow(WindowType_ComboData,
 		new ComboDataWindow("Combo Data", true, ImGuiWindowFlags_AlwaysAutoResize));
+
+	AddWindow(WindowType_ReplayDBPopup,
+		new ReplayDBPopupWindow("Replay DB Popup", true, *this, ImGuiWindowFlags_NoTitleBar));
 }

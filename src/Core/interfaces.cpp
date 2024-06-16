@@ -61,6 +61,11 @@ void InitManagers()
 			g_interfaces.pRoomManager
 		);
 	}
+	if (g_interfaces.pRoomManager &&
+		!g_interfaces.pReplayUploadManager)
+	{
+		g_interfaces.pReplayUploadManager = new ReplayUploadManager(g_interfaces.pRoomManager);
+	}
 }
 
 void CleanupInterfaces()

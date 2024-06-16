@@ -64,6 +64,8 @@ SnapshotApparatus::SnapshotApparatus() {
 			WriteToProtectedMemory((uintptr_t)ptr_oldmem_3, oldmem_3, 6);
 			//memcpy(ptr_oldmem_1, oldmem_1, 2);
 		}
+		//this->p_snapshot_reseve = new Snapshot;
+		//this->pp_snapshot_reseve = &this->p_snapshot_reseve;
 	}
 
 bool SnapshotApparatus::save_snapshot(Snapshot** pbuf_mine)
@@ -82,7 +84,7 @@ bool SnapshotApparatus::save_snapshot(Snapshot** pbuf_mine)
 	}
 
 	unsigned char** pbuf = &snap_manager->_saved_states_related_struct[this->snapshot_count%10]._ptr_buf_saved_frame;
-	
+	//snap_manager->_saved_states_related_struct[this->snapshot_count % 10]._framecount = *g_gameVals.pFrameCount;
 	//unsigned char** pbuf = (unsigned char**)&snap_manager->_saved_states_related_struct[0]._ptr_buf_saved_frame;
 	int checksum = 0;
 	int counter_of_some_sort = 1;
@@ -92,11 +94,11 @@ bool SnapshotApparatus::save_snapshot(Snapshot** pbuf_mine)
 	this->callbacks_ptr->save_game_state((unsigned char**)pbuf,
 		&sizeofstate, //&counter_of_some_sort, I still dont know for sure if this is supposed to be the counter or the sie 
 		&checksum); //I assume this is supposed to be checksum but idk
+	snap_manager->_saved_states_related_struct[this->snapshot_count % 10]._framecount = *g_gameVals.pFrameCount;
 	this->snapshot_count += 1;
 	if (pbuf_mine != 0) {
 		memcpy(*pbuf_mine, *pbuf, 0xa10000);
 	}
-
 	return true;
 }
 bool SnapshotApparatus::save_snapshot_prealloc()
@@ -228,7 +230,48 @@ bool SnapshotApparatus::load_snapshot_prealloc(int index)
 	return true;
 	return false;
 }
+bool SnapshotApparatus::load_snapshot_index(int index) {
+	/* leave buf as zero to not involve our own buffers and just the "built in" snapshot buffer of 10*/
+	char* base_addr = GetBbcfBaseAdress();
 
+	//memcpy(&temp_savestate_loc, savedstate_mine[savegame_index], 4);
+	//callbacks_ptr->load_game_state((unsigned char*)temp_savestate_loc);
+	/// COPIES_FROM_OUR_BUFFER_TO_FIRST_ROLLBACK_SLOT
+	static_DAT_of_PTR_on_load_4* DAT_on_load_4_addr = (static_DAT_of_PTR_on_load_4*)(base_addr + 0x612718);
+	SnapshotManager* snap_manager = 0;
+	if (DAT_on_load_4_addr) {
+		snap_manager = DAT_on_load_4_addr->ptr_snapshot_manager_mine;
+	}
+	else {
+		return false;
+	}
+	unsigned char* dest_buf = (unsigned char*)snap_manager->_saved_states_related_struct[(index ) % 10]._ptr_buf_saved_frame;
+	
+
+	/// COPIES_FROM_OUR_BUFFER_TO_FIRST_ROLLBACK_SLOT_END
+	///PRELUDE
+	auto mem_offset_1 = 0x383f63;//3 bytes
+	void* ptr_oldmem_load = base_addr + mem_offset_1;
+	char nops[] = "\x90\x90\x90\x90\x90\x90\x90\x90";
+	char jmp_short_23[] = "\xEB\x23";
+	char oldmem_load[3];
+	memcpy(oldmem_load, ptr_oldmem_load, 3);
+	WriteToProtectedMemory((uintptr_t)ptr_oldmem_load, jmp_short_23, 2);
+	WriteToProtectedMemory((uintptr_t)ptr_oldmem_load + 2, nops, 1);
+	/// PRELUDE_END
+
+
+
+
+
+	//unsigned char* buf = (unsigned char*)snap_manager->_saved_states_related_struct[(savegame_count % 10) - 1]._ptr_buf_saved_frame;
+	this->callbacks_ptr->load_game_state(dest_buf);
+
+	///CLEANUP
+	WriteToProtectedMemory((uintptr_t)ptr_oldmem_load, oldmem_load, 3);
+	///CLEANUP_END
+	return true;
+}
 bool SnapshotApparatus::check_if_valid(CharData* p1, CharData* p2)
 {
 	if (this->p1_ptr == p1 && this->p2_ptr == p2) {
@@ -241,7 +284,22 @@ void SnapshotApparatus::clear_count()
 {
 	this->snapshot_count = 0;
 }
+bool SnapshotApparatus::clear_framecounts() {
+	char* base_addr = GetBbcfBaseAdress();
+	static_DAT_of_PTR_on_load_4* DAT_on_load_4_addr = (static_DAT_of_PTR_on_load_4*)(base_addr + 0x612718);
+	SnapshotManager* snap_manager = 0;
+	if (DAT_on_load_4_addr) {
+		snap_manager = DAT_on_load_4_addr->ptr_snapshot_manager_mine;
+	}
+	else {
+		return false;
+	}
+	for (auto& state : snap_manager->_saved_states_related_struct) {
 
+		state._framecount = 0;
+	}
+	return true;
+}
 
 int SnapshotApparatus::get_nearest_prealloc_frame(int current_frame, std::map<int, Snapshot*> frame_snap_map) {
 	

@@ -154,6 +154,15 @@ bool WindowManager::Initialize(void *hwnd, IDirect3DDevice9 *device)
 	srand(time(NULL));
 
 	StartAsyncUpdateCheck();
+	//StartAsyncReplayUpload();
+
+	if (g_modVals.uploadReplayData == -1)
+	{
+		m_windowContainer->GetWindow(WindowType_ReplayDBPopup)->Open();
+	}
+
+
+
 
 	std::string notificationText = MOD_WINDOW_TITLE;
 	notificationText += " ";
