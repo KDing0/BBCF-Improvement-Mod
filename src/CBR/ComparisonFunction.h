@@ -3006,7 +3006,7 @@ inline float comparisonFunctionDebug(Metadata * curGamestate, Metadata * caseGam
             multiplier = fmax(-0.01731221 + (0.9791619 - -0.01731221) / (1 + pow((distance / 0.364216), (4.017896))), 0);
         }
 
-        if (autoFail) {
+        if (autoFail || curHelper == nullptr) {
             return curCosts[costHelperSum] * multiplier;
         }
         compValue += compStateHash(curHelper->typeHash, caseHelper->typeHash) * curCosts[costHelperType];

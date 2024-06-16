@@ -9,10 +9,10 @@ private:
     friend class boost::serialization::access;
     int replayIndex;
     std::vector<std::shared_ptr<Metadata>> metaData;
-    std::vector<int> input;
-    std::string playerName;
-    std::array< std::string, 2> characterName;
-    std::array<int, 2> characterId;
+    std::vector<int> input = {};
+    std::string playerName = "";
+    std::array< std::string, 2> characterName = {};
+    std::array<int, 2> characterId = {};
     bool playing = false;
 
 

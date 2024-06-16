@@ -30,7 +30,7 @@ class CbrSearchTree {
     struct treeNode {             // Structure declaration
         int cbrIndex = -1;
         int cbrReplayIndex = -1;
-        struct std::vector<treePos> childNodes;
+        std::vector<treePos> childNodes;
         //struct std::vector<treePos> parrentNodes;
 
         friend class boost::serialization::access;

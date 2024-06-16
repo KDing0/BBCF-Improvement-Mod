@@ -18,7 +18,9 @@
 
 
 #define DebugPrint false
-
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 
 
 
@@ -173,6 +175,15 @@ bool CbrInterface::isAnyPlayingReversalReplays() {
 CbrInterface::CbrInterface()
 {
 	//loadSettings(this);
+	FILE* leakReportFile = fopen("leak_report.txt", "w");
+	if (!leakReportFile) {
+		// Handle error if file opening fails
+		perror("Error opening file for output");
+	}
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	// Redirect the memory-leak report to the file
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+	_CrtSetReportFile(_CRT_WARN, leakReportFile);
 }
 void CbrInterface::OnMatchInit(CharData& c1, CharData& c2, int gameMode) {
 	loadSettings(this);
@@ -915,18 +926,36 @@ void CbrInterface::clearThreads() {
 
 }
 
+void CbrInterface::mergeCbrReplayBuffer(bool checkSkip = false) {
+	/*if (!checkSkip && processingCBRdata) { return; }
+	if (recordBufferP1Backup.size() > 0) {
+		recordBufferP1.insert(recordBufferP1.end(), recordBufferP1Backup.begin(), recordBufferP1Backup.end());
+	}
+	if (recordBufferP2Backup.size() > 0) {
+		recordBufferP2.insert(recordBufferP2.end(), recordBufferP2Backup.begin(), recordBufferP2Backup.end());
+	}*/
+}
+
 int CbrInterface::getAutoRecordReplayAmount() {
+
+	mergeCbrReplayBuffer();
 	return recordBufferP1.size() + recordBufferP2.size();
 }
 void CbrInterface::clearAutomaticRecordReplays() {
+	if (processingCBRdata) { return; }
+	mergeCbrReplayBuffer();
 	recordBufferP1.clear();
 	recordBufferP2.clear();
 }
 void CbrInterface::deleteAutomaticRecordReplays(int deletionAmount) {
+	if (processingCBRdata) { return; }
+	mergeCbrReplayBuffer();
 	recordBufferP1.erase(recordBufferP1.end() - deletionAmount, recordBufferP1.end());
 	recordBufferP2.erase(recordBufferP2.end() - deletionAmount, recordBufferP2.end());
 }
 void CbrInterface::resetCbrInterface() {
+	if (processingCBRdata) { return; }
+	mergeCbrReplayBuffer();
 	readDepth = { 99,99 };
 	writeDepth = { -1,-1 };
 	inputMemory = { 5,5 };
@@ -967,13 +996,15 @@ void CbrInterface::EndCbrActivities(int playerNr, bool trim) {
 		auto anReplay = getAnnotatedReplay(0);
 		auto savedReplay = AnnotatedReplay(anReplay->getPlayerName(), anReplay->getCharacterName()[0], anReplay->getCharacterName()[1], anReplay->getCharIds()[0], anReplay->getCharIds()[1]);
 		if (anReplay->getInputSize() >= 600) {
-			recordBufferP1.push_back(std::move(*anReplay));
+			if (processingCBRdata) { recordBufferP1Backup.push_back(std::move(*anReplay)); }
+			else { recordBufferP1.push_back(std::move(*anReplay)); }
 		}
 		setAnnotatedReplay(savedReplay, 0);
 		anReplay = getAnnotatedReplay(1);
 		savedReplay = AnnotatedReplay(anReplay->getPlayerName(), anReplay->getCharacterName()[0], anReplay->getCharacterName()[1], anReplay->getCharIds()[0], anReplay->getCharIds()[1]);
 		if (anReplay->getInputSize() >= 600) {
-			recordBufferP2.push_back(std::move(*anReplay));
+			if (processingCBRdata) { recordBufferP2Backup.push_back(std::move(*anReplay)); }
+			else { recordBufferP2.push_back(std::move(*anReplay)); }
 		}
 		setAnnotatedReplay(savedReplay, 1);
 		autoRecordActive = false;
@@ -1257,6 +1288,8 @@ void CbrInterface::saveStructureDebug(std::string text) {
 }
 
 void CbrInterface::saveReplayDataInMenu() {
+	processingCBRdata = true;
+	mergeCbrReplayBuffer(true);
 	auto cbrData = CbrData();
 	bool ranOnce = false;
 	std::string charName = "";
@@ -1347,7 +1380,7 @@ void CbrInterface::saveReplayDataInMenu() {
 	recordBufferP2.clear();
 	autoRecordSaveCompleted = true;
 	
-
+	processingCBRdata = false;
 	threadActive = false;
 }
 std::string CbrInterface::WriteAiInterfaceState() {
@@ -1383,13 +1416,17 @@ void CbrInterface::RestartCbrActivities(char* p1charName, char* p2charName, int 
 		auto anReplay = getAnnotatedReplay(0);
 		auto savedReplay = AnnotatedReplay(anReplay->getPlayerName(), anReplay->getCharacterName()[0], anReplay->getCharacterName()[1], anReplay->getCharIds()[0], anReplay->getCharIds()[1]);
 		if (anReplay->getInputSize() >= 600) {
-			recordBufferP1.push_back(std::move(*anReplay));
+
+			if (processingCBRdata) { recordBufferP1Backup.push_back(std::move(*anReplay)); }
+			else { recordBufferP1.push_back(std::move(*anReplay)); }
 		}
 		setAnnotatedReplay(savedReplay, 0);
 		anReplay = getAnnotatedReplay(1);
 		savedReplay = AnnotatedReplay(anReplay->getPlayerName(), anReplay->getCharacterName()[0], anReplay->getCharacterName()[1], anReplay->getCharIds()[0], anReplay->getCharIds()[1]);
 		if (anReplay->getInputSize() >= 600) {
-			recordBufferP2.push_back(std::move(*anReplay));
+			if (processingCBRdata) { recordBufferP2Backup.push_back(std::move(*anReplay)); }
+			else{ recordBufferP2.push_back(std::move(*anReplay)); }
+			
 		}
 		setAnnotatedReplay(savedReplay, 1);
 	}

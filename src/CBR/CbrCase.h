@@ -11,8 +11,8 @@ class CbrCase {
 private:
     friend class boost::serialization::access;
     std::shared_ptr<Metadata>metaData;
-    int inputStartingIndex;
-    int inputEndIndex;
+    int inputStartingIndex = 0;
+    int inputEndIndex = 0;
     bool inputBufferSequence = false;
 
 public:
