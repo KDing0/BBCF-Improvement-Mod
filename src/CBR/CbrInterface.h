@@ -57,7 +57,7 @@ public:
 	void CbrInterface::SaveCbrDataThreaded(CbrData& cbr, bool run);
 	void CbrInterface::LoadCbrData(std::string playerName, std::string characterName, bool run, int playerNr);
 	void CbrInterface::LoadCbrData(std::string filename, bool run, int playerNr);
-	void CbrInterface::LoadnDeleteCbrDataExec(std::vector<std::string>& filename, bool upload,  int deleteAmount);
+	void CbrInterface::LoadnDeleteCbrDataExec(std::vector<std::string>& filename, bool upload, int deleteAmount);
 	void CbrInterface::LoadnDeleteCbrData(std::vector<std::string>& filename, bool run, bool upload, int deleteAmount);
 	CbrData CbrInterface::LoadCbrDataExec(std::string filename, int playerNr);
 	CbrData CbrInterface::LoadCbrDataNoThread(std::string filename);
@@ -185,8 +185,10 @@ public:
 	uintptr_t moduleBase = 0;
 	uintptr_t input5Ptr = 0;
 
-	std::vector<AnnotatedReplay> recordBufferP1;
-	std::vector<AnnotatedReplay> recordBufferP2;
+	std::vector<AnnotatedReplay> recordBufferP1{};
+	std::vector<AnnotatedReplay> recordBufferP2{};
+	std::vector<AnnotatedReplay> recordBufferP1Backup{};
+	std::vector<AnnotatedReplay> recordBufferP2Backup{};
 
 	bool netaRecording = false;
 	bool netaPlaying = false;
@@ -210,5 +212,8 @@ private:
 	
 	
 	bool threadActive = false;
+	bool processingCBRdata = false;
 	boost::thread processingStoredRecordingsThread;
+
+	void CbrInterface::mergeCbrReplayBuffer(bool checkSkip);
 };
